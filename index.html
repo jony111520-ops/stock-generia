@@ -378,6 +378,9 @@
                 </div>
             </div>
 
+            <!-- Error diagnostic badge -->
+            <div id="cloudErrorDetails" class="hidden p-2.5 bg-rose-50 border border-rose-200 text-rose-700 rounded-lg text-xs font-mono mb-3 break-all"></div>
+
             <div class="bg-indigo-50 p-3 rounded-xl border border-indigo-100 text-[11px] text-indigo-900 mb-4 space-y-1">
                 <p class="font-bold flex items-center gap-1">
                     <span>ℹ️ ¿Cómo obtenerlo 100% gratis en 2 minutos?</span>
@@ -627,22 +630,23 @@
         }
 
         async function connectFirebase(config) {
+            const errBox = document.getElementById('cloudErrorDetails');
+            if (errBox) errBox.classList.add('hidden');
+
             try {
                 // Dynamically import Firebase v11 modular SDKs
-                const { initializeApp } = await import("https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js");
-                const { getAuth, signInAnonymously } = await import("https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js");
-                const { getFirestore, doc, setDoc, onSnapshot, collection } = await import("https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js");
+                const { initializeApp, getApps } = await import("https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js");
+                const { getFirestore, doc, setDoc, onSnapshot } = await import("https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js");
 
-                const app = initializeApp(config, "GeneriaStockApp");
-                auth = getAuth(app);
+                let app;
+                const activeApps = getApps();
+                if (activeApps.length > 0) {
+                    app = activeApps[0];
+                } else {
+                    app = initializeApp(config);
+                }
+                
                 db = getFirestore(app);
-
-                // Authenticate anonymously
-                await signInAnonymously(auth);
-
-                isCloudActive = true;
-                updateCloudStatus(true);
-                showToast("Conectado a la nube. Sincronización en vivo activa.");
 
                 // Listen to Realtime updates on Medications
                 const medsRef = doc(db, "stock_generia", "medications");
@@ -658,7 +662,10 @@
                         // First time: upload current local data
                         syncMedsToCloud();
                     }
-                }, (error) => console.error("Error escuchando fármacos:", error));
+                }, (error) => {
+                    console.error("Error escuchando fármacos:", error);
+                    handleConnectionError(error);
+                });
 
                 // Listen to Realtime updates on Laboratories
                 const labsRef = doc(db, "stock_generia", "laboratories");
@@ -690,11 +697,24 @@
                     }
                 }, (error) => console.error("Error escuchando actas:", error));
 
+                isCloudActive = true;
+                updateCloudStatus(true);
+                showToast("¡Conectado a la nube! Sincronización en vivo activa.");
+
             } catch (err) {
                 console.error("Fallo al conectar con Firebase:", err);
-                updateCloudStatus(false);
-                showToast("No se pudo conectar a la nube. Verifique las credenciales.");
+                handleConnectionError(err);
             }
+        }
+
+        function handleConnectionError(err) {
+            updateCloudStatus(false);
+            const errBox = document.getElementById('cloudErrorDetails');
+            if (errBox) {
+                errBox.classList.remove('hidden');
+                errBox.innerText = `Detalle del error: ${err.message || err}`;
+            }
+            showToast("No se pudo conectar a Firebase. Verifique las claves.");
         }
 
         async function syncMedsToCloud() {
@@ -754,24 +774,36 @@
         }
 
         function saveCloudConfig() {
-            const input = document.getElementById('firebaseConfigInput').value.trim();
+            let input = document.getElementById('firebaseConfigInput').value.trim();
             if (!input) {
                 showToast("Por favor ingresá la configuración");
                 return;
             }
 
             try {
-                // Accepts clean JSON or extracts object from JavaScript variable
                 let parsed = null;
-                if (input.startsWith('{') && input.endsWith('}')) {
-                    parsed = JSON.parse(input);
-                } else {
-                    const match = input.match(/\{[\s\S]*\}/);
-                    if (match) parsed = JSON.parse(match[0]);
+
+                // 1. If it has const firebaseConfig = { ... }
+                if (input.includes('{') && input.includes('}')) {
+                    const startIdx = input.indexOf('{');
+                    const endIdx = input.lastIndexOf('}');
+                    const objStr = input.substring(startIdx, endIdx + 1);
+
+                    try {
+                        // First attempt standard JSON parse
+                        parsed = JSON.parse(objStr);
+                    } catch (e) {
+                        // If keys are not double-quoted, convert JavaScript object notation to valid JSON
+                        const jsonStr = objStr
+                            .replace(/([a-zA-Z0-9_]+)\s*:/g, '"$1":')
+                            .replace(/'/g, '"')
+                            .replace(/,\s*}/g, '}');
+                        parsed = JSON.parse(jsonStr);
+                    }
                 }
 
                 if (!parsed || !parsed.apiKey || !parsed.projectId) {
-                    showToast("Formato inválido. Debe contener al menos apiKey y projectId");
+                    showToast("Formato inválido. No se encontró apiKey o projectId.");
                     return;
                 }
 
@@ -780,8 +812,13 @@
                 connectFirebase(parsed);
 
             } catch (err) {
-                console.error(err);
-                showToast("Error de sintaxis en el JSON. Verificá comillas y llaves.");
+                console.error("Error parseando Firebase config:", err);
+                const errBox = document.getElementById('cloudErrorDetails');
+                if (errBox) {
+                    errBox.classList.remove('hidden');
+                    errBox.innerText = `Error al leer el texto pegado: asegurate de copiar desde { hasta }.`;
+                }
+                showToast("Error de formato al leer las credenciales.");
             }
         }
 
