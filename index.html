@@ -29,14 +29,24 @@
                     <div class="flex items-center gap-2">
                         <h1 class="font-bold text-lg leading-tight tracking-tight">Droguería Generia</h1>
                         <span class="text-xs bg-emerald-500/20 text-emerald-300 font-semibold px-2 py-0.5 rounded-full border border-emerald-500/30">Ciudadela</span>
-                        <span class="text-[10px] bg-indigo-500/20 text-indigo-300 font-bold px-2 py-0.5 rounded-full border border-indigo-500/30">v2.1</span>
+                        <span class="text-[10px] bg-indigo-500/20 text-indigo-300 font-bold px-2 py-0.5 rounded-full border border-indigo-500/30">v3.0 Nube</span>
                     </div>
-                    <p class="text-xs text-slate-400">Sector Psicotrópicos & Estupefacientes</p>
+                    <div class="flex items-center gap-2 mt-0.5">
+                        <p class="text-xs text-slate-400">Sector Psicotrópicos & Estupefacientes</p>
+                        <span id="cloudStatusBadge" class="inline-flex items-center gap-1 text-[11px] font-medium text-amber-300 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-full">
+                            <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
+                            <span>Memoria Local</span>
+                        </span>
+                    </div>
                 </div>
             </div>
 
             <!-- Action Buttons in Nav -->
             <div class="flex items-center gap-2 flex-wrap">
+                <button onclick="openCloudModal()" class="flex items-center gap-1.5 px-3 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold shadow-sm transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 00-9.78 2.096A4.001 4.001 0 003 15z"></path></svg>
+                    <span>Conectar Nube</span>
+                </button>
                 <button onclick="openNewMedModal()" class="flex items-center gap-2 px-3 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-semibold shadow-sm transition">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
                     <span>Nuevo Fármaco</span>
@@ -327,7 +337,67 @@
             </div>
 
             <div class="mt-4 text-right">
-                <button onclick="closeManageLabsModal()" class="px-4 py-2 bg-slate-900 text-white rounded-lg text-xs font-semibold hover:bg-slate-800 transition">Cerrar</button>
+            <button onclick="closeManageLabsModal()" class="px-4 py-2 bg-slate-900 text-white rounded-lg text-xs font-semibold hover:bg-slate-800 transition">Cerrar</button>
+        </div>
+    </div>
+</div>
+
+    <!-- Modal: Cloud Sync Configuration -->
+    <div id="cloudModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 00-9.78 2.096A4.001 4.001 0 003 15z"></path></svg>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-bold text-slate-900 leading-tight">Sincronización en Tiempo Real</h3>
+                        <p class="text-[11px] text-slate-500">Conectá todos los celulares y PCs al mismo stock</p>
+                    </div>
+                </div>
+                <button onclick="closeCloudModal()" class="text-slate-400 hover:text-slate-600 p-1">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+
+            <p class="text-xs text-slate-600 mb-3 leading-relaxed">
+                Pegá aquí tu configuración de <b>Firebase</b> para que cualquier modificación hecha desde un celular se vea en 1 segundo en las computadoras del depósito:
+            </p>
+
+            <div class="space-y-3 mb-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Configuración Firebase (JSON o fragmento):</label>
+                    <textarea id="firebaseConfigInput" rows="7" placeholder='{
+  "apiKey": "AIzaSy...",
+  "authDomain": "tu-proyecto.firebaseapp.com",
+  "projectId": "tu-proyecto",
+  "storageBucket": "tu-proyecto.appspot.com",
+  "messagingSenderId": "...",
+  "appId": "..."
+}' class="w-full p-2.5 border border-slate-300 rounded-lg font-mono text-[11px] focus:ring-2 focus:ring-indigo-500 focus:outline-none bg-slate-50"></textarea>
+                </div>
+            </div>
+
+            <div class="bg-indigo-50 p-3 rounded-xl border border-indigo-100 text-[11px] text-indigo-900 mb-4 space-y-1">
+                <p class="font-bold flex items-center gap-1">
+                    <span>ℹ️ ¿Cómo obtenerlo 100% gratis en 2 minutos?</span>
+                </p>
+                <ol class="list-decimal list-inside space-y-0.5 text-indigo-800">
+                    <li>Entrás a <b>console.firebase.google.com</b> con tu cuenta Google.</li>
+                    <li>Creás un proyecto (ej: "Stock Generia").</li>
+                    <li>Creás una base de datos <b>Firestore Database</b> en modo de prueba.</li>
+                    <li>En Configuración del proyecto agregás una app Web y copiás las claves aquí.</li>
+                </ol>
+            </div>
+
+            <div class="flex items-center justify-between gap-2 pt-2 border-t border-slate-100">
+                <button onclick="disconnectCloud()" id="btnDisconnectCloud" class="hidden text-rose-600 text-xs font-bold hover:bg-rose-50 px-3 py-2 rounded-lg transition">
+                    Desconectar nube
+                </button>
+                <div class="flex items-center gap-2 ml-auto">
+                    <button onclick="closeCloudModal()" class="px-3 py-2 rounded-lg border border-slate-300 text-slate-700 text-xs font-semibold hover:bg-slate-100 transition">Cancelar</button>
+                    <button onclick="saveCloudConfig()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-bold transition">Conectar y Sincronizar</button>
+                </div>
             </div>
         </div>
     </div>
@@ -377,6 +447,7 @@
         const STORAGE_KEY_MEDS = 'generia_stock_meds_v2';
         const STORAGE_KEY_LABS = 'generia_stock_labs_v2';
         const STORAGE_KEY_LOGS = 'generia_stock_logs_v2';
+        const STORAGE_KEY_FIREBASE = 'generia_stock_firebase_cfg';
 
         // Default initial laboratories
         const DEFAULT_LABS = ["Vannier", "Biotenk", "Denver", "Rospaw"];
@@ -469,9 +540,18 @@
         let logs = [];
         let selectedLabFilter = 'ALL';
 
+        // Cloud sync variables
+        let isCloudActive = false;
+        let db = null;
+        let auth = null;
+        let unsubscribeMeds = null;
+        let unsubscribeLabs = null;
+        let unsubscribeLogs = null;
+
         // Initialize application
         window.addEventListener('DOMContentLoaded', () => {
             loadInitialData();
+            initCloudIfAvailable();
             renderApp();
         });
 
@@ -516,14 +596,206 @@
 
         function saveMeds() {
             localStorage.setItem(STORAGE_KEY_MEDS, JSON.stringify(medications));
+            if (isCloudActive && db) syncMedsToCloud();
         }
 
         function saveLabs() {
             localStorage.setItem(STORAGE_KEY_LABS, JSON.stringify(laboratories));
+            if (isCloudActive && db) syncLabsToCloud();
         }
 
         function saveLogs() {
             localStorage.setItem(STORAGE_KEY_LOGS, JSON.stringify(logs));
+            if (isCloudActive && db) syncLogsToCloud();
+        }
+
+        // --- Cloud Sync Logic (Firebase Firestore Realtime) ---
+        async function initCloudIfAvailable() {
+            const rawCfg = localStorage.getItem(STORAGE_KEY_FIREBASE);
+            if (!rawCfg) {
+                updateCloudStatus(false);
+                return;
+            }
+
+            try {
+                const config = JSON.parse(rawCfg);
+                await connectFirebase(config);
+            } catch (e) {
+                console.error("Error al inicializar la nube:", e);
+                updateCloudStatus(false);
+            }
+        }
+
+        async function connectFirebase(config) {
+            try {
+                // Dynamically import Firebase v11 modular SDKs
+                const { initializeApp } = await import("https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js");
+                const { getAuth, signInAnonymously } = await import("https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js");
+                const { getFirestore, doc, setDoc, onSnapshot, collection } = await import("https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js");
+
+                const app = initializeApp(config, "GeneriaStockApp");
+                auth = getAuth(app);
+                db = getFirestore(app);
+
+                // Authenticate anonymously
+                await signInAnonymously(auth);
+
+                isCloudActive = true;
+                updateCloudStatus(true);
+                showToast("Conectado a la nube. Sincronización en vivo activa.");
+
+                // Listen to Realtime updates on Medications
+                const medsRef = doc(db, "stock_generia", "medications");
+                unsubscribeMeds = onSnapshot(medsRef, (docSnap) => {
+                    if (docSnap.exists()) {
+                        const data = docSnap.data();
+                        if (data && Array.isArray(data.items)) {
+                            medications = data.items;
+                            localStorage.setItem(STORAGE_KEY_MEDS, JSON.stringify(medications));
+                            renderApp();
+                        }
+                    } else {
+                        // First time: upload current local data
+                        syncMedsToCloud();
+                    }
+                }, (error) => console.error("Error escuchando fármacos:", error));
+
+                // Listen to Realtime updates on Laboratories
+                const labsRef = doc(db, "stock_generia", "laboratories");
+                unsubscribeLabs = onSnapshot(labsRef, (docSnap) => {
+                    if (docSnap.exists()) {
+                        const data = docSnap.data();
+                        if (data && Array.isArray(data.items)) {
+                            laboratories = data.items;
+                            localStorage.setItem(STORAGE_KEY_LABS, JSON.stringify(laboratories));
+                            renderApp();
+                        }
+                    } else {
+                        syncLabsToCloud();
+                    }
+                }, (error) => console.error("Error escuchando laboratorios:", error));
+
+                // Listen to Realtime updates on Logs
+                const logsRef = doc(db, "stock_generia", "logs");
+                unsubscribeLogs = onSnapshot(logsRef, (docSnap) => {
+                    if (docSnap.exists()) {
+                        const data = docSnap.data();
+                        if (data && Array.isArray(data.items)) {
+                            logs = data.items;
+                            localStorage.setItem(STORAGE_KEY_LOGS, JSON.stringify(logs));
+                            renderApp();
+                        }
+                    } else {
+                        syncLogsToCloud();
+                    }
+                }, (error) => console.error("Error escuchando actas:", error));
+
+            } catch (err) {
+                console.error("Fallo al conectar con Firebase:", err);
+                updateCloudStatus(false);
+                showToast("No se pudo conectar a la nube. Verifique las credenciales.");
+            }
+        }
+
+        async function syncMedsToCloud() {
+            if (!isCloudActive || !db) return;
+            try {
+                const { doc, setDoc } = await import("https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js");
+                await setDoc(doc(db, "stock_generia", "medications"), { items: medications, updatedAt: new Date().toISOString() });
+            } catch (e) {
+                console.error("Error subiendo stock a la nube:", e);
+            }
+        }
+
+        async function syncLabsToCloud() {
+            if (!isCloudActive || !db) return;
+            try {
+                const { doc, setDoc } = await import("https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js");
+                await setDoc(doc(db, "stock_generia", "laboratories"), { items: laboratories, updatedAt: new Date().toISOString() });
+            } catch (e) {
+                console.error("Error subiendo laboratorios a la nube:", e);
+            }
+        }
+
+        async function syncLogsToCloud() {
+            if (!isCloudActive || !db) return;
+            try {
+                const { doc, setDoc } = await import("https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js");
+                await setDoc(doc(db, "stock_generia", "logs"), { items: logs, updatedAt: new Date().toISOString() });
+            } catch (e) {
+                console.error("Error subiendo libro de actas:", e);
+            }
+        }
+
+        function updateCloudStatus(online) {
+            const badge = document.getElementById('cloudStatusBadge');
+            const disconnectBtn = document.getElementById('btnDisconnectCloud');
+            if (!badge) return;
+
+            if (online) {
+                badge.className = "inline-flex items-center gap-1.5 text-[11px] font-semibold text-emerald-300 bg-emerald-500/10 border border-emerald-500/30 px-2 py-0.5 rounded-full";
+                badge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span><span>Nube Conectada (En vivo)</span>`;
+                if (disconnectBtn) disconnectBtn.classList.remove('hidden');
+            } else {
+                badge.className = "inline-flex items-center gap-1 text-[11px] font-medium text-amber-300 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-full";
+                badge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span><span>Memoria Local</span>`;
+                if (disconnectBtn) disconnectBtn.classList.add('hidden');
+            }
+        }
+
+        function openCloudModal() {
+            const currentCfg = localStorage.getItem(STORAGE_KEY_FIREBASE) || '';
+            document.getElementById('firebaseConfigInput').value = currentCfg;
+            document.getElementById('cloudModal').classList.remove('hidden');
+        }
+
+        function closeCloudModal() {
+            document.getElementById('cloudModal').classList.add('hidden');
+        }
+
+        function saveCloudConfig() {
+            const input = document.getElementById('firebaseConfigInput').value.trim();
+            if (!input) {
+                showToast("Por favor ingresá la configuración");
+                return;
+            }
+
+            try {
+                // Accepts clean JSON or extracts object from JavaScript variable
+                let parsed = null;
+                if (input.startsWith('{') && input.endsWith('}')) {
+                    parsed = JSON.parse(input);
+                } else {
+                    const match = input.match(/\{[\s\S]*\}/);
+                    if (match) parsed = JSON.parse(match[0]);
+                }
+
+                if (!parsed || !parsed.apiKey || !parsed.projectId) {
+                    showToast("Formato inválido. Debe contener al menos apiKey y projectId");
+                    return;
+                }
+
+                localStorage.setItem(STORAGE_KEY_FIREBASE, JSON.stringify(parsed));
+                closeCloudModal();
+                connectFirebase(parsed);
+
+            } catch (err) {
+                console.error(err);
+                showToast("Error de sintaxis en el JSON. Verificá comillas y llaves.");
+            }
+        }
+
+        function disconnectCloud() {
+            if (unsubscribeMeds) unsubscribeMeds();
+            if (unsubscribeLabs) unsubscribeLabs();
+            if (unsubscribeLogs) unsubscribeLogs();
+            localStorage.removeItem(STORAGE_KEY_FIREBASE);
+            isCloudActive = false;
+            db = null;
+            auth = null;
+            updateCloudStatus(false);
+            closeCloudModal();
+            showToast("Nube desconectada. Operando en modo local.");
         }
 
         // Render application components
