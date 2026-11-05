@@ -452,6 +452,17 @@
         const STORAGE_KEY_LOGS = 'generia_stock_logs_v2';
         const STORAGE_KEY_FIREBASE = 'generia_stock_firebase_cfg';
 
+        // Firebase Configuration for Stock-Generia
+        const DEFAULT_FIREBASE_CONFIG = {
+            apiKey: "AIzaSyCmw9QnIDNiofWhs-6QuglxcJHtshYYOQk",
+            authDomain: "stock-generia.firebaseapp.com",
+            projectId: "stock-generia",
+            storageBucket: "stock-generia.firebasestorage.app",
+            messagingSenderId: "211750505731",
+            appId: "1:211750505731:web:e3e28c52d92a01de6c6d36",
+            measurementId: "G-VQ3DPY8C5M"
+        };
+
         // Default initial laboratories
         const DEFAULT_LABS = ["Vannier", "Biotenk", "Denver", "Rospaw"];
 
@@ -614,14 +625,19 @@
 
         // --- Cloud Sync Logic (Firebase Firestore Realtime) ---
         async function initCloudIfAvailable() {
+            let config = null;
             const rawCfg = localStorage.getItem(STORAGE_KEY_FIREBASE);
-            if (!rawCfg) {
-                updateCloudStatus(false);
-                return;
+            if (rawCfg) {
+                try {
+                    config = JSON.parse(rawCfg);
+                } catch (e) {
+                    config = DEFAULT_FIREBASE_CONFIG;
+                }
+            } else {
+                config = DEFAULT_FIREBASE_CONFIG;
             }
 
             try {
-                const config = JSON.parse(rawCfg);
                 await connectFirebase(config);
             } catch (e) {
                 console.error("Error al inicializar la nube:", e);
@@ -699,7 +715,7 @@
 
                 isCloudActive = true;
                 updateCloudStatus(true);
-                showToast("¡Conectado a la nube! Sincronización en vivo activa.");
+                showToast("¡Conectado a la nube de Stock-Generia! En vivo.");
 
             } catch (err) {
                 console.error("Fallo al conectar con Firebase:", err);
