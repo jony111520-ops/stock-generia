@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Droguería Generia - Control de Psicotrópicos</title>
+    <title>Droguería Generia - Control de Stock</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <!-- Firebase App & Firestore SDKs (Compat v9) -->
+    <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-    <!-- Camera barcode scanner library -->
+    <!-- Camera barcode scanner -->
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
     <style>
         body { font-family: 'Inter', sans-serif; }
@@ -27,9 +27,11 @@
 </head>
 <body class="bg-slate-100 text-slate-800 antialiased min-h-screen flex flex-col">
 
-    <!-- Top Header -->
+    <!-- Top Header Clásico -->
     <header class="bg-slate-900 text-white border-b border-slate-800 sticky top-0 z-30 shadow-md">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex flex-wrap justify-between items-center gap-3">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex justify-between items-center gap-3">
+            
+            <!-- Branding -->
             <div class="flex items-center gap-3">
                 <div class="bg-emerald-500 text-slate-950 p-2 rounded-xl flex items-center justify-center font-black shadow-sm">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -40,10 +42,9 @@
                     <div class="flex items-center gap-2">
                         <h1 class="font-bold text-lg leading-tight tracking-tight">Droguería Generia</h1>
                         <span class="text-xs bg-emerald-500/20 text-emerald-300 font-semibold px-2 py-0.5 rounded-full border border-emerald-500/30">Ciudadela</span>
-                        <span class="text-[10px] bg-indigo-500/20 text-indigo-300 font-bold px-2 py-0.5 rounded-full border border-indigo-500/30">v4.0 Escáner & Ventas</span>
                     </div>
                     <div class="flex items-center gap-2 mt-0.5">
-                        <p class="text-xs text-slate-400">Sector Psicotrópicos & Estupefacientes</p>
+                        <p class="text-xs text-slate-400 hidden sm:block">Sector Psicotrópicos & Estupefacientes</p>
                         <span id="cloudStatusBadge" class="inline-flex items-center gap-1 text-[11px] font-medium text-amber-300 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-full">
                             <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
                             <span>Memoria Local</span>
@@ -52,35 +53,49 @@
                 </div>
             </div>
 
-            <!-- Action Buttons in Nav -->
-            <div class="flex items-center gap-2 flex-wrap">
-                <!-- Barcode Scanner Quick Button -->
+            <!-- Operador Responsable & Action Buttons -->
+            <div class="flex items-center gap-2 flex-wrap justify-end">
+                <!-- Selector de Operador Activo -->
+                <div class="flex items-center bg-slate-800 border border-slate-700 rounded-lg p-1 gap-1.5 shadow-sm">
+                    <div class="flex items-center gap-1.5 px-2 py-1 bg-slate-900 rounded-md">
+                        <span class="text-xs">👤</span>
+                        <select id="activeOperatorSelect" onchange="handleOperatorSelectChange(this.value)" class="bg-transparent text-white text-xs font-bold focus:outline-none cursor-pointer">
+                            <!-- Opciones cargadas dinámicamente -->
+                        </select>
+                    </div>
+                    <button onclick="promptNewOperator()" title="Ingresar nuevo usuario" class="px-2 py-1 text-[11px] bg-slate-700 hover:bg-slate-600 text-emerald-400 font-bold rounded-md transition flex items-center gap-1">
+                        <span>+ Otro</span>
+                    </button>
+                </div>
+
+                <!-- Botón Escáner -->
                 <button onclick="openScannerModal()" class="flex items-center gap-1.5 px-3 py-2 bg-sky-600 hover:bg-sky-500 text-white rounded-lg text-xs font-bold shadow-sm transition">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path></svg>
                     <span>Escanear Código</span>
                 </button>
-                <button onclick="openExpiryReportModal()" class="flex items-center gap-1.5 px-3 py-2 bg-amber-600 hover:bg-amber-500 text-white rounded-lg text-xs font-bold shadow-sm transition" title="Reporte comercial de vencimientos">
+
+                <!-- Botón Ventas Vencimientos -->
+                <button onclick="openExpiryReportModal()" class="flex items-center gap-1.5 px-3 py-2 bg-amber-600 hover:bg-amber-500 text-white rounded-lg text-xs font-bold shadow-sm transition">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
                     <span>Vencimientos (Ventas)</span>
                 </button>
-                <button onclick="openCloudModal()" class="flex items-center gap-1.5 px-3 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold shadow-sm transition">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 00-9.78 2.096A4.001 4.001 0 003 15z"></path></svg>
-                    <span>Nube</span>
-                </button>
-                <button onclick="openNewMedModal()" class="flex items-center gap-2 px-3 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-semibold shadow-sm transition">
+
+                <!-- Botón Nuevo Fármaco -->
+                <button onclick="openNewMedModal()" class="flex items-center gap-1.5 px-3 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-semibold shadow-sm transition">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
                     <span>Nuevo Fármaco</span>
                 </button>
-                <button onclick="toggleAuditDrawer(true)" class="flex items-center gap-2 px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-xs font-semibold border border-slate-700 transition">
+
+                <!-- Botón Libro de Actas -->
+                <button onclick="toggleAuditDrawer(true)" class="flex items-center gap-1.5 px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-xs font-semibold border border-slate-700 transition">
                     <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
                     <span>Libro de Actas</span>
                 </button>
-                <button onclick="exportToCSV()" class="flex items-center gap-2 px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-xs font-semibold border border-slate-700 transition" title="Descargar planilla Excel/CSV">
-                    <svg class="w-4 h-4 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                    <span>CSV</span>
-                </button>
-                <button onclick="resetAllDataConfirm()" class="p-2 text-slate-400 hover:text-rose-400 hover:bg-slate-800 rounded-lg transition" title="Reiniciar datos de fábrica">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+
+                <!-- Botón Nube -->
+                <button onclick="openCloudModal()" class="flex items-center gap-1.5 px-3 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold shadow-sm transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 00-9.78 2.096A4.001 4.001 0 003 15z"></path></svg>
+                    <span>Nube</span>
                 </button>
             </div>
         </div>
@@ -90,41 +105,36 @@
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 w-full flex flex-col gap-6">
 
         <!-- Top KPIs -->
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
             <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
                 <span class="text-xs font-medium text-slate-500 uppercase tracking-wider block">Fármacos Registrados</span>
                 <span id="kpiTotalSkus" class="text-2xl font-bold text-slate-900 mt-1 block">0</span>
             </div>
             <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-                <span class="text-xs font-medium text-slate-500 uppercase tracking-wider block">Stock Físico Global</span>
+                <span class="text-xs font-medium text-slate-500 uppercase tracking-wider block">Unidades en Depósito</span>
                 <span id="kpiTotalUnits" class="text-2xl font-bold text-slate-900 mt-1 block">0</span>
             </div>
             <div class="bg-white p-4 rounded-xl border border-rose-200 bg-rose-50/40 shadow-sm">
-                <span class="text-xs font-semibold text-rose-700 uppercase tracking-wider block">Bajo Punto Reposición</span>
+                <span class="text-xs font-semibold text-rose-700 uppercase tracking-wider block">Bajo Punto Mínimo</span>
                 <span id="kpiCriticalCount" class="text-2xl font-bold text-rose-700 mt-1 block">0</span>
             </div>
-            <!-- Expiration KPI Alert for Sales -->
-            <div onclick="setExpiryFilterQuick()" class="bg-white p-4 rounded-xl border border-amber-200 bg-amber-50/40 shadow-sm cursor-pointer hover:bg-amber-100/50 transition" title="Clic para filtrar por vencimiento próximo">
+            <div onclick="setExpiryFilterQuick()" class="bg-white p-4 rounded-xl border border-amber-200 bg-amber-50/40 shadow-sm cursor-pointer hover:bg-amber-100/50 transition">
                 <div class="flex items-center justify-between">
                     <span class="text-xs font-semibold text-amber-800 uppercase tracking-wider block">Vto. Corto (&lt; 6 meses)</span>
                     <span class="text-[10px] bg-amber-200 text-amber-900 font-bold px-1.5 py-0.5 rounded">Ventas</span>
                 </div>
                 <span id="kpiExpiryNearCount" class="text-2xl font-bold text-amber-700 mt-1 block">0</span>
             </div>
-            <div class="hidden sm:hidden">
-                <span id="kpiTodayTrans">0</span>
-            </div>
+            <div class="hidden"><span id="kpiTodayTrans">0</span></div>
         </div>
 
         <!-- Filter and Search Card -->
         <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col gap-4">
-            
-            <!-- Search bar & presentation selector -->
             <div class="grid grid-cols-1 md:grid-cols-12 gap-3">
                 <div class="md:col-span-5 relative">
-                    <svg class="w-4 h-4 absolute left-3.5 top-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                    <input type="text" id="searchInput" oninput="renderApp()" placeholder="Buscar por fármaco, droga, lote, código de barras o estante..." class="w-full pl-10 pr-10 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
-                    <button onclick="openScannerModal()" class="absolute right-2 top-2 p-1 text-slate-400 hover:text-sky-600 rounded" title="Escanear con cámara">
+                    <svg class="w-4 h-4 absolute left-3 top-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                    <input type="text" id="searchInput" oninput="renderApp()" placeholder="Buscar fármaco, droga, lote, código de barras..." class="w-full pl-9 pr-9 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                    <button onclick="openScannerModal()" class="absolute right-2 top-2 p-1 text-slate-400 hover:text-sky-600 rounded">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path></svg>
                     </button>
                 </div>
@@ -141,36 +151,20 @@
                 <div class="md:col-span-4">
                     <select id="filterStatus" onchange="renderApp()" class="w-full py-2 px-3 border border-slate-300 rounded-lg text-sm bg-white text-slate-700 focus:ring-2 focus:ring-emerald-500 focus:outline-none">
                         <option value="ALL">🟢 Todos los Estados</option>
-                        <option value="LOW">⚠️ Stock Crítico / Reponer</option>
+                        <option value="LOW">⚠️ Stock Crítico (Bajo Mínimo)</option>
                         <option value="EXP_SHORT">⏳ Vencimiento Corto (&lt; 6 meses)</option>
-                        <option value="EXP_CRITICAL">🚨 Vto. Urgente (&lt; 60 días o vencido)</option>
+                        <option value="EXP_CRITICAL">🚨 Vto. Urgente (&lt; 60 días)</option>
                         <option value="OK">✔️ Stock Óptimo</option>
                     </select>
                 </div>
             </div>
 
-            <!-- Laboratory Filter Bar with Dynamic Badges & Management Buttons -->
             <div class="border-t border-slate-100 pt-3">
-                <div class="flex items-center justify-between gap-2 mb-2 flex-wrap">
-                    <span class="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
-                        <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
-                        Filtrar por Laboratorio:
-                    </span>
-                    <div class="flex items-center gap-2">
-                        <button onclick="openNewLabPrompt()" class="text-xs px-2.5 py-1 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-300 font-semibold rounded-lg flex items-center gap-1 transition">
-                            <span>+ Nuevo Laboratorio</span>
-                        </button>
-                        <button onclick="openManageLabsModal()" class="text-xs px-2.5 py-1 bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-300 font-medium rounded-lg flex items-center gap-1 transition">
-                            <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                            <span>Gestionar / Corregir</span>
-                        </button>
-                    </div>
+                <div class="flex items-center justify-between gap-2 mb-2">
+                    <span class="text-xs font-bold text-slate-500 uppercase tracking-wider">Laboratorio:</span>
+                    <button onclick="openManageLabsModal()" class="text-xs text-slate-600 hover:text-slate-900 font-semibold underline">Gestionar Laboratorios</button>
                 </div>
-                
-                <!-- Pills List Container -->
-                <div id="labPillContainer" class="flex flex-wrap items-center gap-1.5">
-                    <!-- Injected dynamically -->
-                </div>
+                <div id="labPillContainer" class="flex items-center gap-1.5 overflow-x-auto pb-1 custom-scrollbar"></div>
             </div>
         </div>
 
@@ -184,15 +178,11 @@
                 <span class="text-xs text-slate-500">Droguería Generia (Ciudadela)</span>
             </div>
 
-            <div id="inventoryGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <!-- Cards injected dynamically -->
-            </div>
+            <div id="inventoryGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
 
-            <!-- Empty State -->
             <div id="emptyState" class="hidden text-center py-12 bg-white rounded-xl border border-slate-200">
-                <svg class="w-12 h-12 text-slate-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path></svg>
-                <p class="text-slate-600 font-semibold">No se encontraron productos con los filtros aplicados</p>
-                <p class="text-xs text-slate-400 mt-1">Podés crear uno nuevo con el botón "+ Nuevo Fármaco"</p>
+                <p class="text-slate-600 font-semibold text-sm">No se encontraron productos con los filtros aplicados</p>
+                <p class="text-xs text-slate-400 mt-1">Podés crear uno con el botón "+ Nuevo Fármaco"</p>
             </div>
         </div>
     </main>
@@ -202,12 +192,12 @@
         <div class="bg-white rounded-2xl max-w-md w-full p-5 shadow-2xl border border-slate-200">
             <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-3">
                 <div class="flex items-center gap-2">
-                    <div class="p-2 bg-sky-100 text-sky-700 rounded-lg">
+                    <div class="p-1.5 bg-sky-100 text-sky-700 rounded-lg">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path></svg>
                     </div>
                     <div>
                         <h3 class="text-sm font-bold text-slate-900">Escáner de Barras</h3>
-                        <p class="text-[11px] text-slate-500">Cámara trasera para lectura rápida</p>
+                        <p class="text-[10px] text-slate-500">Cámara trasera para lectura de cajas</p>
                     </div>
                 </div>
                 <button onclick="closeScannerModal()" class="text-slate-400 hover:text-slate-600 p-1">
@@ -224,38 +214,41 @@
 
             <!-- Scan result badge -->
             <div id="scannerMatchedBox" class="mt-3 p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs hidden">
-                <span class="text-[10px] uppercase font-bold text-slate-400 block">Producto Detectado:</span>
+                <span class="text-[9px] uppercase font-bold text-slate-400 block">Producto Detectado:</span>
                 <p id="scannerMatchedTitle" class="font-bold text-slate-900 text-sm mt-0.5"></p>
                 <p id="scannerMatchedBarcode" class="font-mono text-emerald-600 text-[11px] mt-0.5"></p>
                 
-                <div class="grid grid-cols-2 gap-2 mt-3 pt-2 border-t border-slate-200">
-                    <button onclick="scannerTriggerTx('IN')" class="py-1.5 px-2 bg-emerald-600 text-white rounded-lg font-bold text-xs hover:bg-emerald-500 transition">
+                <div class="grid grid-cols-3 gap-2 mt-2.5 pt-2 border-t border-slate-200">
+                    <button onclick="scannerTriggerTx('IN')" class="py-2 px-2 bg-emerald-600 text-white rounded-lg font-bold text-xs hover:bg-emerald-500 transition">
                         + Ingreso
                     </button>
-                    <button onclick="scannerTriggerTx('OUT')" class="py-1.5 px-2 bg-rose-600 text-white rounded-lg font-bold text-xs hover:bg-rose-500 transition">
+                    <button onclick="scannerTriggerTx('OUT')" class="py-2 px-2 bg-rose-600 text-white rounded-lg font-bold text-xs hover:bg-rose-500 transition">
                         - Egreso
+                    </button>
+                    <button onclick="scannerTriggerCount()" class="py-2 px-2 bg-indigo-600 text-white rounded-lg font-bold text-xs hover:bg-indigo-500 transition">
+                        📋 Conteo
                     </button>
                 </div>
             </div>
 
-            <div class="mt-4 flex justify-between items-center text-xs">
-                <span class="text-slate-400 text-[11px]">Lee EAN-13, Datamatrix y QR</span>
-                <button onclick="closeScannerModal()" class="px-4 py-2 border border-slate-300 text-slate-700 font-semibold rounded-lg hover:bg-slate-100 transition">Cerrar</button>
+            <div class="mt-3 flex justify-between items-center text-xs">
+                <span class="text-slate-400 text-[10px]">Lee EAN-13, Datamatrix y QR</span>
+                <button onclick="closeScannerModal()" class="px-3 py-1.5 border border-slate-300 text-slate-700 font-semibold rounded-lg hover:bg-slate-100 transition">Cerrar</button>
             </div>
         </div>
     </div>
 
-    <!-- Modal: Sales Expiration Report (WhatsApp / Copy) -->
+    <!-- Modal: Sales Expiration Report -->
     <div id="expiryReportModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200">
+        <div class="bg-white rounded-2xl max-w-lg w-full p-5 shadow-2xl border border-slate-200">
             <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-3">
                 <div class="flex items-center gap-2">
-                    <div class="p-2 bg-amber-100 text-amber-700 rounded-lg">
+                    <div class="p-1.5 bg-amber-100 text-amber-700 rounded-lg">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
                     </div>
                     <div>
-                        <h3 class="text-sm font-bold text-slate-900">Vencimientos Próximos (Para Ventas)</h3>
-                        <p class="text-[11px] text-slate-500">Lotes a liquidar antes de su caducidad</p>
+                        <h3 class="text-sm font-bold text-slate-900">Vencimientos para Ventas</h3>
+                        <p class="text-[10px] text-slate-500">Lotes a liquidar antes de su caducidad</p>
                     </div>
                 </div>
                 <button onclick="closeExpiryReportModal()" class="text-slate-400 hover:text-slate-600 p-1">
@@ -263,24 +256,16 @@
                 </button>
             </div>
 
-            <p class="text-xs text-slate-600 mb-3">
-                Copiá este resumen o mandalo directamente por WhatsApp a los vendedores para que ofrezcan estos lotes prioritarios con descuento a farmacias y sanatorios:
-            </p>
+            <textarea id="salesReportText" rows="7" readonly class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-mono text-xs text-slate-800 focus:outline-none mb-3 select-all"></textarea>
 
-            <textarea id="salesReportText" rows="8" readonly class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-mono text-xs text-slate-800 focus:outline-none mb-4 select-all"></textarea>
-
-            <div class="flex items-center justify-between gap-2 border-t border-slate-100 pt-3">
-                <button onclick="shareReportWhatsApp()" class="flex items-center gap-1.5 px-3 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold transition">
+            <div class="flex flex-col sm:flex-row items-center justify-between gap-2 border-t border-slate-100 pt-3">
+                <button onclick="shareReportWhatsApp()" class="w-full sm:w-auto flex items-center justify-center gap-1.5 px-3 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold transition">
                     <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
-                    <span>Enviar a Ventas (WhatsApp)</span>
+                    <span>Enviar a WhatsApp</span>
                 </button>
-                <div class="flex items-center gap-2">
-                    <button onclick="copySalesReportText()" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-lg text-xs transition">
-                        Copiar Texto
-                    </button>
-                    <button onclick="closeExpiryReportModal()" class="px-3 py-2 border border-slate-300 text-slate-700 font-semibold rounded-lg text-xs hover:bg-slate-50 transition">
-                        Cerrar
-                    </button>
+                <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
+                    <button onclick="copySalesReportText()" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-lg text-xs transition">Copiar</button>
+                    <button onclick="closeExpiryReportModal()" class="px-3 py-2 border border-slate-300 text-slate-700 font-semibold rounded-lg text-xs hover:bg-slate-50 transition">Cerrar</button>
                 </div>
             </div>
         </div>
@@ -288,51 +273,103 @@
 
     <!-- Modal: Stock Entry / Exit Transaction -->
     <div id="txModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 animate-in fade-in zoom-in duration-150">
-            <div class="flex items-start justify-between mb-4 pb-3 border-b border-slate-100">
+        <div class="bg-white rounded-2xl max-w-md w-full p-5 shadow-2xl border border-slate-200">
+            <div class="flex items-start justify-between mb-3 pb-2.5 border-b border-slate-100">
                 <div>
-                    <span id="txModalBadge" class="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full"></span>
-                    <h3 id="txModalTitle" class="text-lg font-bold text-slate-900 mt-1">Registrar Movimiento</h3>
+                    <span id="txModalBadge" class="text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full"></span>
+                    <h3 id="txModalTitle" class="text-base font-bold text-slate-900 mt-1">Registrar Movimiento</h3>
                     <p id="txModalDrug" class="text-xs text-slate-500"></p>
                 </div>
-                <button onclick="closeTxModal()" class="text-slate-400 hover:text-slate-600 p-1 rounded-lg">
+                <button onclick="closeTxModal()" class="text-slate-400 hover:text-slate-600 p-1">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                 </button>
             </div>
 
-            <form id="txForm" onsubmit="submitTransaction(event)" class="space-y-4">
+            <form id="txForm" onsubmit="submitTransaction(event)" class="space-y-3.5">
                 <input type="hidden" id="txMedId">
                 <input type="hidden" id="txType">
 
-                <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 flex justify-between items-center text-xs">
+                <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200 flex justify-between items-center text-xs">
                     <div>
-                        <span class="text-slate-500 block">Stock Físico Actual:</span>
+                        <span class="text-slate-500 block text-[11px]">Stock Actual:</span>
                         <span id="txCurrentStock" class="font-bold text-slate-800 text-sm">0</span>
                     </div>
                     <div class="text-right">
-                        <span class="text-slate-500 block">Presentación:</span>
+                        <span class="text-slate-500 block text-[11px]">Presentación:</span>
                         <span id="txUnitLabel" class="font-semibold text-slate-700"></span>
                     </div>
                 </div>
 
                 <div>
-                    <label id="txQuantityLabel" class="block text-xs font-bold text-slate-700 mb-1">Cantidad a ingresar</label>
-                    <input type="number" id="txQuantity" min="1" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-base font-semibold focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                    <label id="txQuantityLabel" class="block text-xs font-bold text-slate-700 mb-1">Cantidad</label>
+                    <input type="number" id="txQuantity" min="1" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-lg font-bold text-slate-900 focus:ring-2 focus:ring-emerald-500 focus:outline-none">
                 </div>
 
                 <div>
                     <label id="txDocLabel" class="block text-xs font-bold text-slate-700 mb-1">N° Remito Oficial</label>
-                    <input type="text" id="txDocRef" required placeholder="Ej: REM-004581 o PED-1029" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                    <input type="text" id="txDocRef" required placeholder="Ej: REM-004581" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
                 </div>
 
                 <div>
-                    <label class="block text-xs font-bold text-slate-700 mb-1">Observaciones / Motivo</label>
-                    <input type="text" id="txNotes" placeholder="Ej: Recepción de proveedor / Despacho a farmacia" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Observaciones</label>
+                    <input type="text" id="txNotes" placeholder="Recepción / Entrega" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
                 </div>
 
                 <div class="flex items-center gap-2 pt-2">
-                    <button type="button" onclick="closeTxModal()" class="w-1/2 py-2 px-4 rounded-lg border border-slate-300 text-slate-700 text-xs font-semibold hover:bg-slate-100 transition">Cancelar</button>
-                    <button type="submit" id="txSubmitBtn" class="w-1/2 py-2 px-4 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition">Confirmar</button>
+                    <button type="button" onclick="closeTxModal()" class="w-1/2 py-2 px-3 rounded-lg border border-slate-300 text-slate-700 text-xs font-semibold hover:bg-slate-100 transition">Cancelar</button>
+                    <button type="submit" id="txSubmitBtn" class="w-1/2 py-2 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition">Confirmar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Conteo Físico / Inventario Rápido -->
+    <div id="invCountModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-5 shadow-2xl border border-slate-200">
+            <div class="flex items-start justify-between mb-3 pb-2.5 border-b border-slate-100">
+                <div>
+                    <span class="text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-800">TOMA DE INVENTARIO</span>
+                    <h3 class="text-base font-bold text-slate-900 mt-1">Conteo Físico Real</h3>
+                    <p id="invCountMedDrug" class="text-xs text-slate-500"></p>
+                </div>
+                <button onclick="closeInventoryCountModal()" class="text-slate-400 hover:text-slate-600 p-1">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+
+            <form id="invCountForm" onsubmit="submitInventoryCount(event)" class="space-y-3.5">
+                <input type="hidden" id="invCountMedId">
+
+                <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200 flex justify-between items-center text-xs">
+                    <div>
+                        <span class="text-slate-500 block text-[11px]">Stock en Sistema:</span>
+                        <span id="invCountSysStock" class="font-bold text-slate-800 text-sm">0</span>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-slate-500 block text-[11px]">Presentación:</span>
+                        <span id="invCountUnitLabel" class="font-semibold text-slate-700"></span>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">¿Cuántas unidades contaste físicamente?</label>
+                    <input type="number" id="invCountPhysicalQty" min="0" required oninput="calculateInventoryDiff()" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xl font-bold text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                </div>
+
+                <!-- Diff preview box -->
+                <div id="invDiffBox" class="p-2.5 rounded-xl border border-slate-200 text-xs font-semibold flex items-center justify-between bg-slate-50">
+                    <span class="text-slate-600">Diferencia de Recuento:</span>
+                    <span id="invDiffBadge" class="font-bold text-sm text-slate-800">0</span>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Motivo del Ajuste</label>
+                    <input type="text" id="invCountReason" placeholder="Recuento mensual / Auditoría física" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                </div>
+
+                <div class="flex items-center gap-2 pt-2">
+                    <button type="button" onclick="closeInventoryCountModal()" class="w-1/2 py-2 px-3 rounded-lg border border-slate-300 text-slate-700 text-xs font-semibold hover:bg-slate-100 transition">Cancelar</button>
+                    <button type="submit" class="w-1/2 py-2 px-3 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition">Guardar Conteo</button>
                 </div>
             </form>
         </div>
@@ -340,18 +377,18 @@
 
     <!-- Modal: Create / Edit Medication -->
     <div id="medModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl max-w-xl w-full p-6 shadow-2xl border border-slate-200 max-h-[90vh] overflow-y-auto custom-scrollbar">
-            <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
-                <h3 id="medModalTitle" class="text-base font-bold text-slate-900">Nuevo Fármaco Psicotrópico</h3>
+        <div class="bg-white rounded-2xl max-w-xl w-full p-5 shadow-2xl border border-slate-200 max-h-[90vh] overflow-y-auto custom-scrollbar">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-3">
+                <h3 id="medModalTitle" class="text-sm font-bold text-slate-900">Nuevo Fármaco Psicotrópico</h3>
                 <button onclick="closeMedModal()" class="text-slate-400 hover:text-slate-600 p-1">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                 </button>
             </div>
 
-            <form id="medForm" onsubmit="submitMedication(event)" class="space-y-4 text-xs">
+            <form id="medForm" onsubmit="submitMedication(event)" class="space-y-3 text-xs">
                 <input type="hidden" id="medFormId">
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                     <div class="sm:col-span-2">
                         <label class="block font-bold text-slate-700 mb-1">Nombre Comercial & Concentración *</label>
                         <input type="text" id="medName" required placeholder="Ej: Clonazepam 2mg x 30" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
@@ -359,7 +396,7 @@
 
                     <div class="sm:col-span-2">
                         <label class="block font-bold text-slate-700 mb-1">Principio Activo (Droga) *</label>
-                        <input type="text" id="medDrug" required placeholder="Ej: Clonazepam / Morfina Clorhidrato" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                        <input type="text" id="medDrug" required placeholder="Ej: Clonazepam" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
                     </div>
 
                     <div>
@@ -368,7 +405,6 @@
                             <button type="button" onclick="openNewLabPrompt()" class="text-[11px] text-emerald-600 font-bold hover:underline">+ Crear</button>
                         </div>
                         <select id="medLab" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none">
-                            <!-- Injected -->
                         </select>
                     </div>
 
@@ -382,7 +418,7 @@
                     </div>
 
                     <div>
-                        <label class="block font-bold text-slate-700 mb-1">Unidad de Medida</label>
+                        <label class="block font-bold text-slate-700 mb-1">Unidad</label>
                         <select id="medUnit" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none">
                             <option value="Cajas">Cajas</option>
                             <option value="Blisters">Blisters</option>
@@ -392,15 +428,11 @@
 
                     <div>
                         <label class="block font-bold text-slate-700 mb-1">Ubicación Física *</label>
-                        <input type="text" id="medLocation" required placeholder="Ej: Bóveda de Seguridad / Estante A" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                        <input type="text" id="medLocation" required placeholder="Estante A / Bóveda" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
                     </div>
 
-                    <!-- Barcode field inside Medication Form -->
                     <div class="sm:col-span-2">
-                        <div class="flex items-center justify-between mb-1">
-                            <label class="font-bold text-slate-700">Código de Barras (EAN / Datamatrix)</label>
-                            <span class="text-[10px] text-slate-400">Opcional para lectura por cámara</span>
-                        </div>
+                        <label class="block font-bold text-slate-700 mb-1">Código de Barras (EAN / Datamatrix)</label>
                         <div class="flex gap-2">
                             <input type="text" id="medBarcode" placeholder="Ej: 7798024310012" class="flex-1 px-3 py-2 border border-slate-300 rounded-lg text-sm font-mono focus:ring-2 focus:ring-emerald-500 focus:outline-none">
                             <button type="button" onclick="scanBarcodeForForm()" class="px-3 py-2 bg-slate-800 text-white rounded-lg text-xs font-bold hover:bg-slate-700 transition flex items-center gap-1">
@@ -412,152 +444,95 @@
 
                     <div>
                         <label class="block font-bold text-slate-700 mb-1">N° de Lote</label>
-                        <input type="text" id="medBatch" placeholder="Ej: L-4890" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                        <input type="text" id="medBatch" placeholder="L-4890" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
                     </div>
 
                     <div>
-                        <label class="block font-bold text-slate-700 mb-1">Fecha de Vencimiento</label>
+                        <label class="block font-bold text-slate-700 mb-1">Vencimiento</label>
                         <input type="month" id="medExpiry" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
                     </div>
 
                     <div>
-                        <label class="block font-bold text-slate-700 mb-1">Stock Físico Inicial *</label>
+                        <label class="block font-bold text-slate-700 mb-1">Stock Físico *</label>
                         <input type="number" id="medStock" min="0" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm font-semibold focus:ring-2 focus:ring-emerald-500 focus:outline-none">
                     </div>
 
                     <div>
-                        <label class="block font-bold text-slate-700 mb-1">Punto Mínimo (Alerta) *</label>
+                        <label class="block font-bold text-slate-700 mb-1">Punto Mínimo *</label>
                         <input type="number" id="medMinStock" min="0" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm font-semibold focus:ring-2 focus:ring-emerald-500 focus:outline-none">
                     </div>
                 </div>
 
-                <div class="flex items-center justify-between pt-4 border-t border-slate-100">
+                <div class="flex items-center justify-between pt-3 border-t border-slate-100">
                     <button type="button" id="btnDeleteMedInForm" onclick="deleteMedFromForm()" class="hidden text-rose-600 font-bold hover:bg-rose-50 px-3 py-2 rounded-lg border border-rose-200 transition">
-                        Eliminar Fármaco
+                        Eliminar
                     </button>
                     <div class="flex items-center gap-2 ml-auto">
-                        <button type="button" onclick="closeMedModal()" class="px-4 py-2 rounded-lg border border-slate-300 text-slate-700 font-semibold hover:bg-slate-100 transition">Cancelar</button>
-                        <button type="submit" class="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold transition">Guardar Fármaco</button>
+                        <button type="button" onclick="closeMedModal()" class="px-3 py-2 rounded-lg border border-slate-300 text-slate-700 font-semibold hover:bg-slate-100 transition">Cancelar</button>
+                        <button type="submit" class="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold transition">Guardar</button>
                     </div>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- Modal: Manage & Correct Laboratories -->
+    <!-- Modal: Manage Labs -->
     <div id="manageLabsModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200">
+        <div class="bg-white rounded-2xl max-w-lg w-full p-5 shadow-2xl border border-slate-200">
             <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-3">
-                <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
-                    <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
-                    <span>Gestionar & Corregir Laboratorios</span>
-                </h3>
+                <h3 class="text-sm font-bold text-slate-900">Gestionar Laboratorios</h3>
                 <button onclick="closeManageLabsModal()" class="text-slate-400 hover:text-slate-600 p-1">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                 </button>
             </div>
-
-            <p class="text-xs text-slate-500 mb-4">
-                Podés corregir errores de tipeo con el lápiz ✏️ (se actualizarán automáticamente todos los medicamentos asociados) o eliminar laboratorios no utilizados.
-            </p>
-
-            <!-- Add lab inline -->
-            <div class="flex gap-2 mb-4">
-                <input type="text" id="newLabInlineInput" placeholder="Nombre del nuevo laboratorio..." class="flex-1 px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+            <div class="flex gap-2 mb-3">
+                <input type="text" id="newLabInlineInput" placeholder="Nombre de laboratorio..." class="flex-1 px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-emerald-500 focus:outline-none">
                 <button onclick="addLaboratoryInline()" class="px-3 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-lg transition">+ Agregar</button>
             </div>
-
-            <!-- List of Labs -->
-            <div id="manageLabsList" class="max-h-64 overflow-y-auto custom-scrollbar divide-y divide-slate-100 border border-slate-200 rounded-xl">
-                <!-- Injected dynamically -->
-            </div>
-
-            <div class="mt-4 text-right">
-                <button onclick="closeManageLabsModal()" class="px-4 py-2 bg-slate-900 text-white rounded-lg text-xs font-semibold hover:bg-slate-800 transition">Cerrar</button>
+            <div id="manageLabsList" class="max-h-60 overflow-y-auto custom-scrollbar divide-y divide-slate-100 border border-slate-200 rounded-xl"></div>
+            <div class="mt-3 text-right">
+                <button onclick="closeManageLabsModal()" class="px-3 py-1.5 bg-slate-900 text-white rounded-lg text-xs font-semibold hover:bg-slate-800 transition">Cerrar</button>
             </div>
         </div>
     </div>
 
-    <!-- Modal: Cloud Sync Configuration -->
-    <div id="cloudModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200">
-            <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
-                <div class="flex items-center gap-2">
-                    <div class="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 00-9.78 2.096A4.001 4.001 0 003 15z"></path></svg>
+    <!-- Modal: Cloud Sync -->
+    <!-- Modal: Historial Individual del Fármaco -->
+    <div id="productHistoryModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-lg w-full p-5 shadow-2xl border border-slate-200 max-h-[85vh] flex flex-col">
+            <div class="flex items-start justify-between pb-3 border-b border-slate-100 mb-3">
+                <div class="flex items-center gap-2.5">
+                    <div class="p-2 bg-indigo-100 text-indigo-700 rounded-xl">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                     </div>
                     <div>
-                        <h3 class="text-sm font-bold text-slate-900 leading-tight">Sincronización en Tiempo Real</h3>
-                        <p class="text-[11px] text-slate-500">Conectá todos los celulares y PCs al mismo stock</p>
+                        <h3 id="productHistoryTitle" class="text-sm font-bold text-slate-900">Historial de Movimientos</h3>
+                        <p id="productHistorySubtitle" class="text-xs text-slate-500"></p>
                     </div>
                 </div>
-                <button onclick="closeCloudModal()" class="text-slate-400 hover:text-slate-600 p-1">
+                <button onclick="closeProductHistoryModal()" class="text-slate-400 hover:text-slate-600 p-1">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                 </button>
             </div>
 
-            <p class="text-xs text-slate-600 mb-3 leading-relaxed">
-                Pegá aquí tu configuración de <b>Firebase</b> para que cualquier modificación hecha desde un celular se vea en 1 segundo en las computadoras del depósito:
-            </p>
-
-            <div class="space-y-3 mb-4">
-                <div>
-                    <label class="block text-xs font-bold text-slate-700 mb-1">Configuración Firebase (JSON o fragmento):</label>
-                    <textarea id="firebaseConfigInput" rows="7" placeholder='{
-  "apiKey": "AIzaSy...",
-  "authDomain": "tu-proyecto.firebaseapp.com",
-  "projectId": "tu-proyecto",
-  "storageBucket": "tu-proyecto.appspot.com",
-  "messagingSenderId": "...",
-  "appId": "..."
-}' class="w-full p-2.5 border border-slate-300 rounded-lg font-mono text-[11px] focus:ring-2 focus:ring-indigo-500 focus:outline-none bg-slate-50"></textarea>
-                </div>
+            <!-- Resumen actual del producto -->
+            <div id="productHistorySummary" class="grid grid-cols-3 gap-2 bg-slate-50 p-2.5 rounded-xl border border-slate-200 text-xs mb-3">
+                <!-- Se inyecta info resumida -->
             </div>
 
-            <!-- Error diagnostic badge -->
-            <div id="cloudErrorDetails" class="hidden p-2.5 bg-rose-50 border border-rose-200 text-rose-700 rounded-lg text-xs font-mono mb-3 break-all"></div>
-
-            <div class="bg-indigo-50 p-3 rounded-xl border border-indigo-100 text-[11px] text-indigo-900 mb-4 space-y-1">
-                <p class="font-bold flex items-center gap-1">
-                    <span>ℹ️ ¿Cómo obtenerlo 100% gratis en 2 minutos?</span>
-                </p>
-                <ol class="list-decimal list-inside space-y-0.5 text-indigo-800">
-                    <li>Entrás a <b>console.firebase.google.com</b> con tu cuenta Google.</li>
-                    <li>Creás un proyecto (ej: "Stock Generia").</li>
-                    <li>Creás una base de datos <b>Firestore Database</b> en modo de prueba.</li>
-                    <li>En Configuración del proyecto agregás una app Web y copiás las claves aquí.</li>
-                </ol>
+            <!-- Lista de movimientos de este producto -->
+            <div id="productHistoryList" class="flex-1 overflow-y-auto space-y-2 pr-1 custom-scrollbar">
+                <!-- Injected logs -->
             </div>
 
-            <div class="flex items-center justify-between gap-2 pt-2 border-t border-slate-100">
-                <button onclick="disconnectCloud()" id="btnDisconnectCloud" class="hidden text-rose-600 text-xs font-bold hover:bg-rose-50 px-3 py-2 rounded-lg transition">
-                    Desconectar nube
-                </button>
-                <div class="flex items-center gap-2 ml-auto">
-                    <button onclick="closeCloudModal()" class="px-3 py-2 rounded-lg border border-slate-300 text-slate-700 text-xs font-semibold hover:bg-slate-100 transition">Cancelar</button>
-                    <button onclick="saveCloudConfig()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-bold transition">Conectar y Sincronizar</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Generic Confirmation Modal -->
-    <div id="confirmModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[60] hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl max-w-sm w-full p-5 shadow-2xl border border-slate-200">
-            <div class="w-10 h-10 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center mb-3">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
-            </div>
-            <h4 id="confirmTitle" class="text-sm font-bold text-slate-900 mb-1">Confirmar acción</h4>
-            <p id="confirmMessage" class="text-xs text-slate-600 mb-4"></p>
-            <div class="flex items-center justify-end gap-2">
-                <button id="confirmCancelBtn" class="px-3 py-1.5 rounded-lg border border-slate-300 text-slate-700 text-xs font-semibold hover:bg-slate-100 transition">Cancelar</button>
-                <button id="confirmAcceptBtn" class="px-3 py-1.5 rounded-lg bg-rose-600 text-white text-xs font-bold hover:bg-rose-500 transition">Confirmar</button>
+            <div class="pt-3 border-t border-slate-100 mt-3 text-right">
+                <button onclick="closeProductHistoryModal()" class="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-xs font-semibold transition">Cerrar</button>
             </div>
         </div>
     </div>
 
     <!-- Audit Drawer -->
-    <div id="auditDrawer" class="fixed inset-0 z-40 hidden">
+    <div id="auditDrawer" class="fixed inset-0 z-50 hidden">
         <div onclick="toggleAuditDrawer(false)" class="absolute inset-0 bg-slate-900/50 backdrop-blur-xs transition-opacity"></div>
         <div class="absolute inset-y-0 right-0 max-w-md w-full bg-white shadow-2xl flex flex-col z-10">
             <div class="p-4 bg-slate-900 text-white flex items-center justify-between">
@@ -569,26 +544,49 @@
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                 </button>
             </div>
-            <div id="auditLogContainer" class="flex-1 overflow-y-auto p-4 space-y-3 custom-scrollbar">
-                <!-- Audit items injected -->
+            <div id="auditLogContainer" class="flex-1 overflow-y-auto p-4 space-y-2.5 custom-scrollbar">
             </div>
         </div>
     </div>
 
-    <!-- Notification Toast -->
-    <div id="toast" class="fixed bottom-5 right-5 bg-slate-900 text-white px-4 py-3 rounded-xl shadow-xl text-xs font-semibold z-50 flex items-center gap-2 transform transition-all duration-300 translate-y-20 opacity-0 pointer-events-none">
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-5 right-5 bg-slate-900 text-white px-4 py-2.5 rounded-xl shadow-xl text-xs font-semibold z-50 flex items-center gap-2 transform transition-all duration-300 translate-y-20 opacity-0 pointer-events-none">
         <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
         <span id="toastMsg">Mensaje</span>
     </div>
 
+    <!-- Modal: Ingreso Rápido de Nuevo Operador -->
+    <div id="operatorPromptModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-sm w-full p-5 shadow-2xl border border-slate-200">
+            <div class="flex items-center justify-between pb-2.5 border-b border-slate-100 mb-3">
+                <div class="flex items-center gap-2">
+                    <span class="text-lg">👤</span>
+                    <h3 class="text-sm font-bold text-slate-900">Identificación de Usuario</h3>
+                </div>
+                <button onclick="closeOperatorPromptModal()" class="text-slate-400 hover:text-slate-600 p-1">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            <p class="text-xs text-slate-500 mb-3">Escribí tu nombre o puesto para que quede asentado en el Libro de Actas cada vez que muevas mercadería:</p>
+            <form onsubmit="submitNewOperator(event)" class="space-y-3">
+                <div>
+                    <input type="text" id="newOperatorInputName" required placeholder="Ej: Lucas (Depósito), Carla DT..." class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm font-semibold focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                </div>
+                <div class="flex items-center gap-2 pt-1">
+                    <button type="button" onclick="closeOperatorPromptModal()" class="w-1/2 py-2 px-3 rounded-lg border border-slate-300 text-slate-700 text-xs font-semibold hover:bg-slate-100 transition">Cancelar</button>
+                    <button type="submit" class="w-1/2 py-2 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition">Establecer Usuario</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script>
-        // Storage keys
         const STORAGE_KEY_MEDS = 'generia_stock_meds_v2';
         const STORAGE_KEY_LABS = 'generia_stock_labs_v2';
         const STORAGE_KEY_LOGS = 'generia_stock_logs_v2';
-        const STORAGE_KEY_FIREBASE = 'generia_stock_firebase_cfg';
+        const STORAGE_KEY_OPERATOR = 'generia_stock_operator';
+        const STORAGE_KEY_OPERATORS_LIST = 'generia_stock_operators_list';
 
-        // Firebase Configuration for Stock-Generia
         const DEFAULT_FIREBASE_CONFIG = {
             apiKey: "AIzaSyCmw9QnIDNiofWhs-6QuglxcJHtshYYOQk",
             authDomain: "stock-generia.firebaseapp.com",
@@ -599,351 +597,226 @@
             measurementId: "G-VQ3DPY8C5M"
         };
 
-        // Default initial laboratories
         const DEFAULT_LABS = ["Vannier", "Biotenk", "Denver", "Rospaw"];
-
-        // Initial realistic inventory with barcodes
+        const DEFAULT_OPERATORS = ["Jony", "Javi", "Nestor", "Ceci", "Anyerson"];
         const DEFAULT_MEDS = [
-            {
-                id: "med-1",
-                barcode: "7798024310012",
-                name: "Clonazepam 2mg x 30",
-                drug: "Clonazepam",
-                lab: "Vannier",
-                presentation: "Cajas estuchadas",
-                unit: "Cajas",
-                location: "Estante A - Sector 1",
-                batch: "VN-2024-01",
-                expiry: "2026-11",
-                stock: 45,
-                minStock: 20
-            },
-            {
-                id: "med-2",
-                barcode: "7798099210045",
-                name: "Alprazolam 1mg (Hospitalario)",
-                drug: "Alprazolam",
-                lab: "Vannier",
-                presentation: "Blisters sueltos",
-                unit: "Blisters",
-                location: "Estante A - Sector 2",
-                batch: "VN-9921",
-                expiry: "2026-08",
-                stock: 120,
-                minStock: 50
-            },
-            {
-                id: "med-3",
-                barcode: "7798033221199",
-                name: "Diazepam 10mg/2ml Inyectable",
-                drug: "Diazepam",
-                lab: "Biotenk",
-                presentation: "Ampollas",
-                unit: "Ampollas",
-                location: "Estante B - Refrigerado",
-                batch: "BK-7740",
-                expiry: "2027-02",
-                stock: 85,
-                minStock: 30
-            },
-            {
-                id: "med-4",
-                barcode: "7798011223344",
-                name: "Morfina Clorhidrato 10mg/1ml",
-                drug: "Morfina Clorhidrato",
-                lab: "Denver",
-                presentation: "Ampollas",
-                unit: "Ampollas",
-                location: "Bóveda de Seguridad",
-                batch: "DF-5021",
-                expiry: "2026-12",
-                stock: 12,
-                minStock: 25
-            },
-            {
-                id: "med-5",
-                barcode: "7798055667788",
-                name: "Fentanilo 0.05mg/ml x 5ml",
-                drug: "Fentanilo Citrato",
-                lab: "Denver",
-                presentation: "Ampollas",
-                unit: "Ampollas",
-                location: "Bóveda de Seguridad",
-                batch: "DF-1144",
-                expiry: "2027-05",
-                stock: 8,
-                minStock: 15
-            },
-            {
-                id: "med-6",
-                barcode: "7798066554433",
-                name: "Haloperidol 5mg x 60",
-                drug: "Haloperidol",
-                lab: "Rospaw",
-                presentation: "Cajas estuchadas",
-                unit: "Cajas",
-                location: "Estante B - Nivel 3",
-                batch: "RP-3011",
-                expiry: "2026-09",
-                stock: 35,
-                minStock: 15
-            }
+            { id: "med-1", barcode: "7798024310012", name: "Clonazepam 2mg x 30", drug: "Clonazepam", lab: "Vannier", presentation: "Cajas estuchadas", unit: "Cajas", location: "Estante A - Sector 1", batch: "VN-2024-01", expiry: "2026-11", stock: 45, minStock: 20 },
+            { id: "med-2", barcode: "7798099210045", name: "Alprazolam 1mg (Hospitalario)", drug: "Alprazolam", lab: "Vannier", presentation: "Blisters sueltos", unit: "Blisters", location: "Estante A - Sector 2", batch: "VN-9921", expiry: "2026-08", stock: 120, minStock: 50 },
+            { id: "med-3", barcode: "7798033221199", name: "Diazepam 10mg/2ml Inyectable", drug: "Diazepam", lab: "Biotenk", presentation: "Ampollas", unit: "Ampollas", location: "Estante B - Refrigerado", batch: "BK-7740", expiry: "2027-02", stock: 85, minStock: 30 },
+            { id: "med-4", barcode: "7798011223344", name: "Morfina Clorhidrato 10mg/1ml", drug: "Morfina Clorhidrato", lab: "Denver", presentation: "Ampollas", unit: "Ampollas", location: "Bóveda de Seguridad", batch: "DF-5021", expiry: "2026-12", stock: 12, minStock: 25 },
+            { id: "med-5", barcode: "7798055667788", name: "Fentanilo 0.05mg/ml x 5ml", drug: "Fentanilo Citrato", lab: "Denver", presentation: "Ampollas", unit: "Ampollas", location: "Bóveda de Seguridad", batch: "DF-1144", expiry: "2027-05", stock: 8, minStock: 15 },
+            { id: "med-6", barcode: "7798066554433", name: "Haloperidol 5mg x 60", drug: "Haloperidol", lab: "Rospaw", presentation: "Cajas estuchadas", unit: "Cajas", location: "Estante B - Nivel 3", batch: "RP-3011", expiry: "2026-09", stock: 35, minStock: 15 }
         ];
 
-        // State variables
         let medications = [];
         let laboratories = [];
         let logs = [];
+        let knownOperators = [...DEFAULT_OPERATORS];
+        let currentOperator = "";
         let selectedLabFilter = 'ALL';
 
-        // Camera Scanner variables
         let appHtml5QrCode = null;
         let isAppScannerActive = false;
         let lastScannedMedId = null;
         let scanTargetInput = null;
 
-        // Cloud sync variables
-        let isCloudActive = false;
         let db = null;
-        let auth = null;
         let unsubscribeMeds = null;
         let unsubscribeLabs = null;
         let unsubscribeLogs = null;
+        let unsubscribeOperators = null;
 
-        // Initialize application
         window.addEventListener('DOMContentLoaded', () => {
             loadInitialData();
-            initCloudIfAvailable();
+            connectFirebase();
             renderApp();
         });
 
         function loadInitialData() {
             try {
-                const oldMeds = localStorage.getItem('generia_stock_meds');
-                if (oldMeds && !localStorage.getItem(STORAGE_KEY_MEDS)) {
-                    localStorage.setItem(STORAGE_KEY_MEDS, oldMeds);
-                }
-
                 const storedLabs = localStorage.getItem(STORAGE_KEY_LABS);
                 laboratories = storedLabs ? JSON.parse(storedLabs) : [...DEFAULT_LABS];
-
                 const storedMeds = localStorage.getItem(STORAGE_KEY_MEDS);
                 medications = storedMeds ? JSON.parse(storedMeds) : [...DEFAULT_MEDS];
-
                 const storedLogs = localStorage.getItem(STORAGE_KEY_LOGS);
                 logs = storedLogs ? JSON.parse(storedLogs) : [];
-
-                if (logs.length === 0) {
-                    logs.push({
-                        id: 'log-init',
-                        timestamp: new Date().toLocaleString('es-AR'),
-                        medName: 'Sistema Droguería Generia',
-                        type: 'IN',
-                        qty: 0,
-                        docRef: 'SISTEMA-INICIAL',
-                        balanceBefore: 0,
-                        balanceAfter: 0,
-                        notes: 'Inicialización de inventario con control de psicotrópicos'
+                
+                const storedOps = localStorage.getItem(STORAGE_KEY_OPERATORS_LIST);
+                if (storedOps) {
+                    knownOperators = JSON.parse(storedOps);
+                    DEFAULT_OPERATORS.forEach(op => {
+                        if (!knownOperators.includes(op)) knownOperators.push(op);
                     });
-                    saveLogs();
+                } else {
+                    knownOperators = [...DEFAULT_OPERATORS];
                 }
+
+                currentOperator = localStorage.getItem(STORAGE_KEY_OPERATOR) || "";
+                renderOperatorSelect();
             } catch (e) {
-                console.error("Error reading localStorage", e);
                 laboratories = [...DEFAULT_LABS];
                 medications = [...DEFAULT_MEDS];
                 logs = [];
+                knownOperators = [...DEFAULT_OPERATORS];
+                currentOperator = "";
+                renderOperatorSelect();
             }
+        }
+
+        function renderOperatorSelect() {
+            const sel = document.getElementById('activeOperatorSelect');
+            if (!sel) return;
+
+            const placeholderOption = `<option value="" ${!currentOperator ? 'selected' : ''} disabled class="bg-slate-900 text-slate-400">👤 Seleccionar Usuario...</option>`;
+
+            sel.innerHTML = placeholderOption + knownOperators.map(op => `
+                <option value="${op}" ${op === currentOperator ? 'selected' : ''} class="bg-slate-900 text-white font-semibold">${op}</option>
+            `).join('') + `
+                <option value="__CUSTOM__" class="bg-slate-900 text-emerald-400 font-bold">+ Escribir mi nombre...</option>
+            `;
+            sel.value = currentOperator || "";
+        }
+
+        function handleOperatorSelectChange(val) {
+            if (val === '__CUSTOM__') {
+                promptNewOperator();
+            } else {
+                currentOperator = val;
+                localStorage.setItem(STORAGE_KEY_OPERATOR, currentOperator);
+                showToast(`Operador activo: ${currentOperator}`);
+            }
+        }
+
+        function promptNewOperator() {
+            const input = document.getElementById('newOperatorInputName');
+            if (input) input.value = '';
+            document.getElementById('operatorPromptModal').classList.remove('hidden');
+            setTimeout(() => { if (input) input.focus(); }, 100);
+        }
+
+        function closeOperatorPromptModal() {
+            document.getElementById('operatorPromptModal').classList.add('hidden');
+            renderOperatorSelect();
+        }
+
+        function submitNewOperator(e) {
+            e.preventDefault();
+            const input = document.getElementById('newOperatorInputName');
+            const clean = input ? input.value.trim() : '';
+
+            if (clean) {
+                currentOperator = clean;
+                if (!knownOperators.includes(clean)) {
+                    knownOperators.push(clean);
+                    localStorage.setItem(STORAGE_KEY_OPERATORS_LIST, JSON.stringify(knownOperators));
+                    if (db) db.collection('generia_stock').doc('operators').set({ items: knownOperators });
+                }
+                localStorage.setItem(STORAGE_KEY_OPERATOR, currentOperator);
+                renderOperatorSelect();
+                closeOperatorPromptModal();
+                showToast(`Registrado como: ${currentOperator}`);
+            }
+        }
+
+        function ensureOperatorSelected() {
+            if (!currentOperator || currentOperator.trim() === '') {
+                promptNewOperator();
+                showToast("Por favor seleccioná o escribí tu nombre primero");
+                return false;
+            }
+            return true;
         }
 
         function saveMeds() {
             localStorage.setItem(STORAGE_KEY_MEDS, JSON.stringify(medications));
-            if (isCloudActive && db) syncMedsToCloud();
+            if (db) db.collection('generia_stock').doc('medications').set({ items: medications });
         }
 
         function saveLabs() {
             localStorage.setItem(STORAGE_KEY_LABS, JSON.stringify(laboratories));
-            if (isCloudActive && db) syncLabsToCloud();
+            if (db) db.collection('generia_stock').doc('laboratories').set({ items: laboratories });
         }
 
         function saveLogs() {
             localStorage.setItem(STORAGE_KEY_LOGS, JSON.stringify(logs));
-            if (isCloudActive && db) syncLogsToCloud();
+            if (db) db.collection('generia_stock').doc('logs').set({ items: logs.slice(0, 100) });
         }
 
-        // --- Cloud Sync Logic (Firebase Firestore Realtime) ---
-        async function initCloudIfAvailable() {
-            let config = null;
-            const rawCfg = localStorage.getItem(STORAGE_KEY_FIREBASE);
-            if (rawCfg) {
-                try {
-                    config = JSON.parse(rawCfg);
-                } catch (e) {
-                    config = DEFAULT_FIREBASE_CONFIG;
-                }
-            } else {
-                config = DEFAULT_FIREBASE_CONFIG;
-            }
-
+        async function connectFirebase() {
             try {
-                await connectFirebase(config);
-            } catch (e) {
-                console.error("Error al inicializar la nube:", e);
-                updateCloudStatus(false);
-            }
-        }
-
-        async function connectFirebase(config) {
-            const errBox = document.getElementById('cloudErrorDetails');
-            if (errBox) errBox.classList.add('hidden');
-
-            try {
-                if (!window.firebase) {
-                    console.warn("Firebase SDK no cargado.");
-                    updateCloudStatus(false);
-                    return;
-                }
-
                 if (!firebase.apps.length) {
-                    firebase.initializeApp(config);
+                    firebase.initializeApp(DEFAULT_FIREBASE_CONFIG);
                 }
-
                 db = firebase.firestore();
                 setupRealtimeListeners();
                 updateCloudStatus(true);
             } catch (err) {
-                console.error("Error al conectar Firebase:", err);
-                if (errBox) {
-                    errBox.innerText = `Error: ${err.message || err}`;
-                    errBox.classList.remove('hidden');
-                }
+                console.error("Firebase err:", err);
                 updateCloudStatus(false);
             }
         }
 
         function updateCloudStatus(connected) {
-            isCloudActive = connected;
             const badge = document.getElementById('cloudStatusBadge');
-            const disconnectBtn = document.getElementById('btnDisconnectCloud');
-
             if (!badge) return;
-
             if (connected) {
                 badge.className = "inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-300 bg-emerald-500/20 border border-emerald-500/30 px-2 py-0.5 rounded-full";
-                badge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span><span>Nube Conectada (En vivo)</span>`;
-                if (disconnectBtn) disconnectBtn.classList.remove('hidden');
+                badge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span><span>Nube Conectada</span>`;
             } else {
                 badge.className = "inline-flex items-center gap-1 text-[11px] font-medium text-amber-300 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-full";
-                badge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span><span>Memoria Local</span>`;
-                if (disconnectBtn) disconnectBtn.classList.add('hidden');
+                badge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span><span>Memoria Local</span>`;
             }
         }
 
         function setupRealtimeListeners() {
             if (!db) return;
-
             if (unsubscribeMeds) unsubscribeMeds();
             if (unsubscribeLabs) unsubscribeLabs();
             if (unsubscribeLogs) unsubscribeLogs();
+            if (unsubscribeOperators) unsubscribeOperators();
 
-            // Real-time synchronization of medications
             unsubscribeMeds = db.collection('generia_stock').doc('medications')
                 .onSnapshot(doc => {
                     if (doc.exists && doc.data()?.items) {
                         medications = doc.data().items;
                         localStorage.setItem(STORAGE_KEY_MEDS, JSON.stringify(medications));
                         renderApp();
-                    } else {
-                        syncMedsToCloud();
                     }
-                }, err => console.error("Error escuchando fármacos:", err));
+                });
 
-            // Real-time synchronization of laboratories
             unsubscribeLabs = db.collection('generia_stock').doc('laboratories')
                 .onSnapshot(doc => {
                     if (doc.exists && doc.data()?.items) {
                         laboratories = doc.data().items;
                         localStorage.setItem(STORAGE_KEY_LABS, JSON.stringify(laboratories));
                         renderApp();
-                    } else {
-                        syncLabsToCloud();
                     }
-                }, err => console.error("Error escuchando laboratorios:", err));
+                });
 
-            // Real-time synchronization of logs
             unsubscribeLogs = db.collection('generia_stock').doc('logs')
                 .onSnapshot(doc => {
                     if (doc.exists && doc.data()?.items) {
                         logs = doc.data().items;
                         localStorage.setItem(STORAGE_KEY_LOGS, JSON.stringify(logs));
                         renderAuditLogs();
-                    } else {
-                        syncLogsToCloud();
                     }
-                }, err => console.error("Error escuchando logs:", err));
+                });
+
+            unsubscribeOperators = db.collection('generia_stock').doc('operators')
+                .onSnapshot(doc => {
+                    if (doc.exists && doc.data()?.items) {
+                        const cloudOps = doc.data().items;
+                        if (Array.isArray(cloudOps)) {
+                            cloudOps.forEach(op => {
+                                if (!knownOperators.includes(op)) knownOperators.push(op);
+                            });
+                            localStorage.setItem(STORAGE_KEY_OPERATORS_LIST, JSON.stringify(knownOperators));
+                            renderOperatorSelect();
+                        }
+                    }
+                });
         }
 
-        async function syncMedsToCloud() {
-            if (!db) return;
-            try {
-                await db.collection('generia_stock').doc('medications').set({ items: medications });
-            } catch (e) {
-                console.error("Error al sincronizar fármacos en la nube:", e);
-            }
-        }
-
-        async function syncLabsToCloud() {
-            if (!db) return;
-            try {
-                await db.collection('generia_stock').doc('laboratories').set({ items: laboratories });
-            } catch (e) {
-                console.error("Error al sincronizar laboratorios en la nube:", e);
-            }
-        }
-
-        async function syncLogsToCloud() {
-            if (!db) return;
-            try {
-                await db.collection('generia_stock').doc('logs').set({ items: logs.slice(0, 100) });
-            } catch (e) {
-                console.error("Error al sincronizar auditoría en la nube:", e);
-            }
-        }
-
-        function openCloudModal() {
-            const rawCfg = localStorage.getItem(STORAGE_KEY_FIREBASE);
-            document.getElementById('firebaseConfigInput').value = rawCfg || JSON.stringify(DEFAULT_FIREBASE_CONFIG, null, 2);
-            document.getElementById('cloudModal').classList.remove('hidden');
-        }
-
-        function closeCloudModal() {
-            document.getElementById('cloudModal').classList.add('hidden');
-        }
-
-        async function saveCloudConfig() {
-            const inputVal = document.getElementById('firebaseConfigInput').value.trim();
-            try {
-                const config = JSON.parse(inputVal);
-                localStorage.setItem(STORAGE_KEY_FIREBASE, JSON.stringify(config));
-                await connectFirebase(config);
-                closeCloudModal();
-                showToast("Conexión en la nube establecida con éxito");
-            } catch (e) {
-                alert("Formato JSON inválido. Verifique las comillas y llaves.");
-            }
-        }
-
-        function disconnectCloud() {
-            if (unsubscribeMeds) unsubscribeMeds();
-            if (unsubscribeLabs) unsubscribeLabs();
-            if (unsubscribeLogs) unsubscribeLogs();
-            db = null;
-            localStorage.removeItem(STORAGE_KEY_FIREBASE);
-            updateCloudStatus(false);
-            closeCloudModal();
-            showToast("Desconectado de la nube");
-        }
-
-        // Master UI Render Function
         function renderApp() {
             renderLaboratoriesBar();
             renderInventory();
@@ -951,13 +824,12 @@
             renderAuditLogs();
         }
 
-        // Render laboratory filter pill buttons
         function renderLaboratoriesBar() {
             const container = document.getElementById('labPillContainer');
             if (!container) return;
 
             const allPill = `
-                <button onclick="setLabFilter('ALL')" class="text-xs px-3 py-1 rounded-full font-semibold transition ${selectedLabFilter === 'ALL' ? 'bg-slate-900 text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}">
+                <button onclick="setLabFilter('ALL')" class="text-xs px-2.5 py-1 rounded-full font-semibold whitespace-nowrap transition ${selectedLabFilter === 'ALL' ? 'bg-slate-900 text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}">
                     Todos (${medications.length})
                 </button>
             `;
@@ -966,9 +838,9 @@
                 const count = medications.filter(m => m.lab === lab).length;
                 const isSelected = selectedLabFilter === lab;
                 return `
-                    <button onclick="setLabFilter('${lab}')" class="text-xs px-3 py-1 rounded-full font-semibold transition flex items-center gap-1.5 ${isSelected ? 'bg-emerald-600 text-white shadow-sm' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}">
+                    <button onclick="setLabFilter('${lab}')" class="text-xs px-2.5 py-1 rounded-full font-semibold whitespace-nowrap transition flex items-center gap-1 ${isSelected ? 'bg-emerald-600 text-white shadow-sm' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}">
                         <span>${lab}</span>
-                        <span class="text-[10px] px-1.5 py-0.2 rounded-full ${isSelected ? 'bg-emerald-700 text-white' : 'bg-slate-200 text-slate-600'}">${count}</span>
+                        <span class="text-[9px] px-1.5 py-0.2 rounded-full ${isSelected ? 'bg-emerald-700 text-white' : 'bg-slate-200 text-slate-600'}">${count}</span>
                     </button>
                 `;
             }).join('');
@@ -981,34 +853,27 @@
             renderApp();
         }
 
-        // Helper: Calculate expiration health status
         function getExpiryStatus(expiryStr) {
-            if (!expiryStr) return { status: 'UNKNOWN', label: 'S/F', color: 'slate', months: 999 };
-            
+            if (!expiryStr) return { status: 'UNKNOWN', label: 'S/F', color: 'slate' };
             const parts = expiryStr.split('-');
-            if (parts.length < 2) return { status: 'UNKNOWN', label: expiryStr, color: 'slate', months: 999 };
+            if (parts.length < 2) return { status: 'UNKNOWN', label: expiryStr, color: 'slate' };
             
-            const expYear = parseInt(parts[0]);
-            const expMonth = parseInt(parts[1]) - 1;
-            const expDate = new Date(expYear, expMonth + 1, 0);
-            
+            const expDate = new Date(parseInt(parts[0]), parseInt(parts[1]), 0);
             const now = new Date();
-            const diffTime = expDate - now;
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            const diffDays = Math.ceil((expDate - now) / (1000 * 60 * 60 * 24));
             const diffMonths = Math.round(diffDays / 30.4);
 
             if (diffDays <= 0) {
-                return { status: 'EXPIRED', label: 'VENCIDO', color: 'rose', bg: 'bg-rose-100 text-rose-800 border-rose-300', days: diffDays, months: diffMonths };
+                return { status: 'EXPIRED', label: 'VENCIDO', bg: 'bg-rose-100 text-rose-800 border-rose-300' };
             } else if (diffDays <= 60) {
-                return { status: 'CRITICAL', label: `Vence en ${diffDays}d`, color: 'rose', bg: 'bg-rose-100 text-rose-800 border-rose-300 animate-pulse font-bold', days: diffDays, months: diffMonths };
+                return { status: 'CRITICAL', label: `Vence en ${diffDays}d`, bg: 'bg-rose-100 text-rose-800 border-rose-300 animate-pulse font-bold' };
             } else if (diffDays <= 180) {
-                return { status: 'SHORT', label: `Vence en ~${diffMonths}m`, color: 'amber', bg: 'bg-amber-100 text-amber-800 border-amber-300 font-bold', days: diffDays, months: diffMonths };
+                return { status: 'SHORT', label: `Vence en ~${diffMonths}m`, bg: 'bg-amber-100 text-amber-800 border-amber-300 font-bold' };
             } else {
-                return { status: 'HEALTHY', label: `${expiryStr}`, color: 'emerald', bg: 'bg-slate-100 text-slate-700', days: diffDays, months: diffMonths };
+                return { status: 'HEALTHY', label: `${expiryStr}`, bg: 'bg-slate-100 text-slate-700' };
             }
         }
 
-        // Render Inventory Cards
         function renderInventory() {
             const grid = document.getElementById('inventoryGrid');
             const empty = document.getElementById('emptyState');
@@ -1054,12 +919,11 @@
                 const expInfo = getExpiryStatus(med.expiry);
 
                 return `
-                    <div class="bg-white rounded-xl border ${isLow ? 'border-rose-300 shadow-rose-50' : expInfo.status === 'CRITICAL' || expInfo.status === 'EXPIRED' ? 'border-amber-300' : 'border-slate-200'} p-4 shadow-sm hover:shadow-md transition flex flex-col justify-between relative group">
+                    <div class="bg-white rounded-xl border ${isLow ? 'border-rose-300 shadow-rose-50' : expInfo.status === 'CRITICAL' || expInfo.status === 'EXPIRED' ? 'border-amber-300' : 'border-slate-200'} p-4 shadow-sm flex flex-col justify-between hover:shadow-md transition">
                         
                         <div>
-                            <!-- Header / Badges -->
-                            <div class="flex items-start justify-between gap-2 mb-2">
-                                <div class="flex flex-wrap items-center gap-1.5">
+                            <div class="flex items-start justify-between gap-1.5 mb-1.5">
+                                <div class="flex flex-wrap items-center gap-1">
                                     <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200">${med.lab}</span>
                                     <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full ${isVault ? 'bg-amber-100 text-amber-800 border border-amber-200 font-bold' : 'bg-slate-100 text-slate-600'}">
                                         ${isVault ? '🔒 ' : '📍 '}${med.location}
@@ -1067,72 +931,71 @@
                                 </div>
                                 
                                 <div class="flex items-center gap-1">
-                                    <button onclick="openEditMedModal('${med.id}')" class="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition" title="Editar producto">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                                    <!-- Botón Historial de Movimientos de este producto -->
+                                    <button onclick="openProductHistoryModal('${med.id}')" title="Ver historial de movimientos" class="p-1.5 text-slate-400 hover:text-indigo-600 rounded-lg hover:bg-indigo-50 transition">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                                     </button>
-                                    <button onclick="confirmDeleteMed('${med.id}')" class="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition" title="Eliminar producto">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                    <button onclick="openEditMedModal('${med.id}')" title="Editar producto" class="p-1.5 text-slate-400 hover:text-slate-700 rounded-lg hover:bg-slate-100 transition">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
                                     </button>
                                 </div>
                             </div>
 
-                            <!-- Title & Drug -->
-                            <h3 class="text-sm font-bold text-slate-900 leading-tight mb-0.5">${med.name}</h3>
-                            <p class="text-xs text-slate-500 mb-2 font-medium">${med.drug}</p>
+                            <div onclick="openProductHistoryModal('${med.id}')" class="cursor-pointer group">
+                                <h3 class="text-sm font-bold text-slate-900 group-hover:text-indigo-600 transition leading-snug mb-0.5 flex items-center justify-between">
+                                    <span>${med.name}</span>
+                                    <span class="text-[10px] text-indigo-500 font-medium group-hover:underline">Historial ➔</span>
+                                </h3>
+                                <p class="text-xs text-slate-500 mb-2">${med.drug}</p>
+                            </div>
 
-                            <!-- Presentation, Batch and Expiry with Warning Badge -->
-                            <div class="grid grid-cols-2 gap-2 text-[11px] text-slate-600 bg-slate-50 p-2 rounded-lg mb-2 border border-slate-100">
+                            <div class="grid grid-cols-2 gap-1.5 text-[11px] text-slate-600 bg-slate-50 p-2 rounded-lg mb-2 border border-slate-100">
                                 <div>
-                                    <span class="text-slate-400 block text-[10px]">PRESENTACIÓN</span>
-                                    <span class="font-medium text-slate-800">${med.presentation || 'Cajas estuchadas'}</span>
+                                    <span class="text-slate-400 block text-[9px]">PRESENTACIÓN</span>
+                                    <span class="font-medium text-slate-800">${med.presentation || 'Cajas'}</span>
                                 </div>
                                 <div>
-                                    <span class="text-slate-400 block text-[10px]">LOTE</span>
+                                    <span class="text-slate-400 block text-[9px]">LOTE</span>
                                     <span class="font-medium text-slate-800">${med.batch || 'S/L'}</span>
                                 </div>
                             </div>
 
-                            <!-- Expiry Banner with Traffic Light -->
-                            <div class="flex items-center justify-between px-2.5 py-1.5 rounded-lg border text-xs mb-3 ${expInfo.bg}">
-                                <div class="flex items-center gap-1.5">
-                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                                    <span class="font-semibold">Vto: ${med.expiry || 'S/F'}</span>
-                                </div>
-                                <span class="text-[10px] uppercase tracking-wider font-extrabold">${expInfo.label}</span>
+                            <div class="flex items-center justify-between px-2 py-1.5 rounded-lg border text-xs mb-3 ${expInfo.bg}">
+                                <span class="font-semibold text-[11px]">Vto: ${med.expiry || 'S/F'}</span>
+                                <span class="text-[9px] uppercase tracking-wider font-extrabold">${expInfo.label}</span>
                             </div>
 
-                            ${med.barcode ? `
-                                <div class="flex items-center gap-1 text-[10px] font-mono text-slate-400 mb-3 px-1">
-                                    <span>||| EAN:</span>
-                                    <span class="text-slate-600 font-semibold">${med.barcode}</span>
-                                </div>
-                            ` : ''}
-
-                            <!-- Current Stock vs Min Stock -->
-                            <div class="flex items-baseline justify-between mb-3">
+                            <div class="flex items-baseline justify-between mb-3 px-1">
                                 <div>
-                                    <span class="text-[10px] uppercase font-bold tracking-wider text-slate-400 block">Stock Disponible</span>
+                                    <span class="text-[9px] uppercase font-bold tracking-wider text-slate-400 block">Stock Físico</span>
                                     <div class="flex items-baseline gap-1">
                                         <span class="text-2xl font-black ${isLow ? 'text-rose-600' : 'text-slate-900'}">${med.stock}</span>
                                         <span class="text-xs font-semibold text-slate-500">${med.unit}</span>
                                     </div>
                                 </div>
                                 <div class="text-right">
-                                    <span class="text-[10px] text-slate-400 block">Punto Mínimo</span>
+                                    <span class="text-[9px] text-slate-400 block">Punto Mínimo</span>
                                     <span class="text-xs font-bold text-slate-600">${med.minStock} ${med.unit}</span>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Action Entry / Exit Buttons -->
-                        <div class="pt-2 border-t border-slate-100 grid grid-cols-2 gap-2">
-                            <button onclick="openTxModal('${med.id}', 'IN')" class="flex items-center justify-center gap-1.5 py-1.5 px-3 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold text-xs rounded-lg border border-emerald-200 transition">
-                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                                <span>Ingreso</span>
-                            </button>
-                            <button onclick="openTxModal('${med.id}', 'OUT')" class="flex items-center justify-center gap-1.5 py-1.5 px-3 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-xs rounded-lg border border-rose-200 transition">
-                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path></svg>
-                                <span>Egreso</span>
+                        <!-- Action Buttons -->
+                        <div class="pt-2 border-t border-slate-100 flex flex-col gap-1.5">
+                            <div class="grid grid-cols-2 gap-2">
+                                <button onclick="openTxModal('${med.id}', 'IN')" class="flex items-center justify-center gap-1 py-1.5 px-2.5 bg-emerald-50 hover:bg-emerald-100 active:bg-emerald-200 text-emerald-700 font-bold text-xs rounded-lg border border-emerald-200 transition shadow-xs">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path></svg>
+                                    <span>Ingreso</span>
+                                </button>
+                                <button onclick="openTxModal('${med.id}', 'OUT')" class="flex items-center justify-center gap-1 py-1.5 px-2.5 bg-rose-50 hover:bg-rose-100 active:bg-rose-200 text-rose-700 font-bold text-xs rounded-lg border border-rose-200 transition shadow-xs">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path></svg>
+                                    <span>Egreso</span>
+                                </button>
+                            </div>
+                            <!-- Botón Modo Inventario / Conteo Físico -->
+                            <button onclick="openInventoryCountModal('${med.id}')" class="w-full flex items-center justify-center gap-1.5 py-1.5 px-2 bg-indigo-50 hover:bg-indigo-100 active:bg-indigo-200 text-indigo-700 font-semibold text-[11px] rounded-lg border border-indigo-200 transition">
+                                <svg class="w-3.5 h-3.5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
+                                <span>📋 Conteo Físico / Inventario</span>
                             </button>
                         </div>
                     </div>
@@ -1140,26 +1003,17 @@
             }).join('');
         }
 
-        // Render KPI counters
         function renderKpis() {
             document.getElementById('kpiTotalSkus').innerText = medications.length;
-            
             const totalUnits = medications.reduce((sum, item) => sum + (parseInt(item.stock) || 0), 0);
             document.getElementById('kpiTotalUnits').innerText = totalUnits.toLocaleString('es-AR');
-
             const criticalCount = medications.filter(item => item.stock <= item.minStock).length;
             document.getElementById('kpiCriticalCount').innerText = criticalCount;
-
             const nearExpiryCount = medications.filter(item => {
                 const exp = getExpiryStatus(item.expiry);
                 return exp.status === 'SHORT' || exp.status === 'CRITICAL' || exp.status === 'EXPIRED';
             }).length;
             document.getElementById('kpiExpiryNearCount').innerText = nearExpiryCount;
-
-            const today = new Date().toLocaleDateString('es-AR');
-            const todayCount = logs.filter(log => log.timestamp && log.timestamp.includes(today)).length;
-            const todayEl = document.getElementById('kpiTodayTrans');
-            if (todayEl) todayEl.innerText = todayCount;
         }
 
         function setExpiryFilterQuick() {
@@ -1167,11 +1021,10 @@
             if (statusFilter) {
                 statusFilter.value = 'EXP_SHORT';
                 renderApp();
-                showToast("Mostrando lotes con vencimiento próximo para comercialización");
+                showToast("Filtrando vencimientos próximos (< 6 meses)");
             }
         }
 
-        // --- Sound Bip for Barcode Scanner ---
         function playBeepSound() {
             try {
                 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -1185,48 +1038,39 @@
                 gain.connect(audioCtx.destination);
                 osc.start();
                 osc.stop(audioCtx.currentTime + 0.12);
-            } catch (e) {
-                console.log("Audio no permitido", e);
-            }
+            } catch (e) {}
         }
 
-        // --- In-App Barcode Camera Scanner (With Robust Lifecycle & Hardware Release) ---
         async function stopAndCleanScanner() {
             if (appHtml5QrCode) {
                 try {
-                    if (isAppScannerActive) {
-                        await appHtml5QrCode.stop();
-                    }
+                    if (isAppScannerActive) await appHtml5QrCode.stop();
                     await appHtml5QrCode.clear();
-                } catch (e) {
-                    console.warn("Limpiando lector:", e);
-                }
+                } catch (e) {}
                 appHtml5QrCode = null;
             }
-
-            // Force stop any lingering camera tracks
             const container = document.getElementById('barcodeVideoContainer');
             if (container) {
                 const videoEl = container.querySelector('video');
                 if (videoEl && videoEl.srcObject) {
                     try {
-                        const tracks = videoEl.srcObject.getTracks();
-                        tracks.forEach(track => track.stop());
+                        videoEl.srcObject.getTracks().forEach(t => {
+                            t.enabled = false;
+                            t.stop();
+                        });
                         videoEl.srcObject = null;
-                    } catch (err) {
-                        console.warn("Deteniendo streams residuales:", err);
-                    }
+                    } catch (err) {}
                 }
                 container.innerHTML = '<div id="scannerModalPlaceholder" class="text-center p-4 text-slate-400 text-xs">Iniciando cámara trasera...</div>';
             }
             isAppScannerActive = false;
+            await new Promise(r => setTimeout(r, 200));
         }
 
         async function openScannerModal() {
             scanTargetInput = null;
             document.getElementById('scannerMatchedBox').classList.add('hidden');
             document.getElementById('scannerModal').classList.remove('hidden');
-
             await stopAndCleanScanner();
             initCameraScanner();
         }
@@ -1235,7 +1079,6 @@
             scanTargetInput = 'medBarcode';
             document.getElementById('scannerMatchedBox').classList.add('hidden');
             document.getElementById('scannerModal').classList.remove('hidden');
-
             await stopAndCleanScanner();
             initCameraScanner();
         }
@@ -1270,7 +1113,6 @@
                 const ph = document.getElementById('scannerModalPlaceholder');
                 if (ph) ph.classList.add('hidden');
             } catch (err) {
-                console.error("Error al iniciar cámara:", err);
                 const ph = document.getElementById('scannerModalPlaceholder');
                 if (ph) {
                     ph.classList.remove('hidden');
@@ -1285,13 +1127,12 @@
             if (scanTargetInput === 'medBarcode') {
                 const input = document.getElementById('medBarcode');
                 if (input) input.value = decodedText;
-                showToast(`Código ${decodedText} capturado`);
+                showToast(`Código capturado: ${decodedText}`);
                 closeScannerModal();
                 return;
             }
 
             const matched = medications.find(m => m.barcode === decodedText || (m.batch && m.batch === decodedText));
-
             const matchedBox = document.getElementById('scannerMatchedBox');
             const matchedTitle = document.getElementById('scannerMatchedTitle');
             const matchedBarcode = document.getElementById('scannerMatchedBarcode');
@@ -1299,12 +1140,12 @@
             if (matched) {
                 lastScannedMedId = matched.id;
                 matchedTitle.innerText = `${matched.name} (${matched.lab})`;
-                matchedBarcode.innerText = `Código: ${decodedText} | Stock actual: ${matched.stock} ${matched.unit}`;
+                matchedBarcode.innerText = `Código: ${decodedText} | Stock: ${matched.stock} ${matched.unit}`;
                 matchedBox.classList.remove('hidden');
             } else {
                 lastScannedMedId = null;
-                matchedTitle.innerText = "Código no registrado en el inventario";
-                matchedBarcode.innerText = `Código leído: ${decodedText}. Podés editar un fármaco y asignarlo.`;
+                matchedTitle.innerText = "Código no registrado";
+                matchedBarcode.innerText = `Leído: ${decodedText}.`;
                 matchedBox.classList.remove('hidden');
             }
 
@@ -1323,12 +1164,106 @@
             openTxModal(medId, type);
         }
 
+        function scannerTriggerCount() {
+            if (!lastScannedMedId) return;
+            const medId = lastScannedMedId;
+            closeScannerModal();
+            openInventoryCountModal(medId);
+        }
+
         async function closeScannerModal() {
             await stopAndCleanScanner();
             document.getElementById('scannerModal').classList.add('hidden');
         }
 
-        // --- Sales Report for Expirations (< 6 months) ---
+        function openInventoryCountModal(medId) {
+            if (!ensureOperatorSelected()) return;
+
+            const med = medications.find(m => m.id === medId);
+            if (!med) return;
+
+            document.getElementById('invCountMedId').value = med.id;
+            document.getElementById('invCountMedDrug').innerText = `${med.name} (${med.lab})`;
+            document.getElementById('invCountSysStock').innerText = `${med.stock} ${med.unit}`;
+            document.getElementById('invCountUnitLabel').innerText = `${med.presentation} (${med.unit})`;
+            document.getElementById('invCountPhysicalQty').value = '';
+            document.getElementById('invCountReason').value = 'Auditoría física de depósito';
+            document.getElementById('invDiffBadge').innerText = '0';
+            document.getElementById('invDiffBadge').className = 'font-bold text-sm text-slate-800';
+
+            document.getElementById('invCountModal').classList.remove('hidden');
+        }
+
+        function closeInventoryCountModal() {
+            document.getElementById('invCountModal').classList.add('hidden');
+        }
+
+        function calculateInventoryDiff() {
+            const medId = document.getElementById('invCountMedId').value;
+            const med = medications.find(m => m.id === medId);
+            if (!med) return;
+
+            const countedVal = document.getElementById('invCountPhysicalQty').value;
+            const badge = document.getElementById('invDiffBadge');
+
+            if (countedVal === '') {
+                badge.innerText = '0';
+                badge.className = 'font-bold text-sm text-slate-800';
+                return;
+            }
+
+            const counted = parseInt(countedVal) || 0;
+            const diff = counted - med.stock;
+
+            if (diff > 0) {
+                badge.innerText = `+${diff} (Sobrante)`;
+                badge.className = 'font-bold text-sm text-emerald-600';
+            } else if (diff < 0) {
+                badge.innerText = `${diff} (Faltante)`;
+                badge.className = 'font-bold text-sm text-rose-600';
+            } else {
+                badge.innerText = `0 (Exacto)`;
+                badge.className = 'font-bold text-sm text-slate-700';
+            }
+        }
+
+        function submitInventoryCount(e) {
+            e.preventDefault();
+            if (!ensureOperatorSelected()) return;
+
+            const medId = document.getElementById('invCountMedId').value;
+            const counted = parseInt(document.getElementById('invCountPhysicalQty').value);
+            const reason = document.getElementById('invCountReason').value.trim() || 'Ajuste de inventario';
+
+            const med = medications.find(m => m.id === medId);
+            if (!med) return;
+
+            const prevStock = med.stock;
+            const diff = counted - prevStock;
+            med.stock = counted;
+
+            logs.unshift({
+                id: 'log-' + Date.now(),
+                medId: med.id,
+                timestamp: new Date().toLocaleString('es-AR'),
+                operator: currentOperator,
+                medName: `${med.name} (${med.lab})`,
+                type: 'COUNT',
+                qty: Math.abs(diff),
+                unit: med.unit,
+                docRef: 'AUDIT-FISICA',
+                balanceBefore: prevStock,
+                balanceAfter: med.stock,
+                notes: `${reason} (Ajuste: ${diff >= 0 ? '+' : ''}${diff})`
+            });
+
+            saveMeds();
+            saveLogs();
+            closeInventoryCountModal();
+            renderApp();
+            showToast(`Inventario guardado: ${med.stock} ${med.unit} contados`);
+        }
+
         function openExpiryReportModal() {
             const nearExpiryMeds = medications.filter(m => {
                 const exp = getExpiryStatus(m.expiry);
@@ -1336,28 +1271,23 @@
             });
 
             const textarea = document.getElementById('salesReportText');
-
             if (nearExpiryMeds.length === 0) {
-                textarea.value = `¡Excelente! No hay psicotrópicos con vencimiento próximo (< 6 meses) en Droguería Generia (Ciudadela).`;
+                textarea.value = `No hay psicotrópicos con vencimiento corto (< 6 meses) en Droguería Generia.`;
             } else {
                 const today = new Date().toLocaleDateString('es-AR');
                 let text = `📦 *DROGUERÍA GENERIA - REPORTE DE VENCIMIENTO CORTO PARA VENTAS*\n`;
                 text += `📅 Fecha: ${today} | Depósito: Ciudadela\n`;
-                text += `⚠️ *Lotes con prioridad comercial de salida inmediata:*\n\n`;
+                text += `⚠️ *Lotes con prioridad comercial:*\n\n`;
 
                 nearExpiryMeds.forEach((m, idx) => {
                     const exp = getExpiryStatus(m.expiry);
                     const tag = exp.status === 'EXPIRED' ? '❌ VENCIDO' : exp.status === 'CRITICAL' ? '🚨 URGENTE' : '⏳ CORTO';
                     text += `${idx + 1}. *${m.name}* (${m.lab})\n`;
-                    text += `   • Stock: *${m.stock} ${m.unit}* [${m.presentation}]\n`;
-                    text += `   • Lote: ${m.batch || 'S/L'} | Vto: *${m.expiry || 'S/F'}* (${tag})\n`;
-                    text += `   • Ubicación: ${m.location}\n\n`;
+                    text += `   • Stock: *${m.stock} ${m.unit}*\n`;
+                    text += `   • Lote: ${m.batch || 'S/L'} | Vto: *${m.expiry || 'S/F'}* (${tag})\n\n`;
                 });
-
-                text += `👉 *Acción sugerida para Ventas:* Priorizar en pedidos a clínicas, sanatorios y farmacias con descuento por lote corto.`;
                 textarea.value = text;
             }
-
             document.getElementById('expiryReportModal').classList.remove('hidden');
         }
 
@@ -1369,29 +1299,25 @@
             const textarea = document.getElementById('salesReportText');
             textarea.select();
             document.execCommand('copy');
-            showToast("Reporte comercial copiado al portapapeles");
+            showToast("Reporte copiado al portapapeles");
         }
 
         function shareReportWhatsApp() {
             const text = document.getElementById('salesReportText').value;
-            const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
-            window.open(url, '_blank');
+            window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
         }
 
-        // Populate laboratory selects in forms
         function populateLabSelects() {
             const select = document.getElementById('medLab');
             if (!select) return;
-
             const current = select.value;
             select.innerHTML = laboratories.map(lab => `<option value="${lab}">${lab}</option>`).join('');
-            if (laboratories.includes(current)) {
-                select.value = current;
-            }
+            if (laboratories.includes(current)) select.value = current;
         }
 
-        // Open transaction modal
         function openTxModal(medId, type) {
+            if (!ensureOperatorSelected()) return;
+
             const med = medications.find(m => m.id === medId);
             if (!med) return;
 
@@ -1406,26 +1332,20 @@
 
             const badge = document.getElementById('txModalBadge');
             const title = document.getElementById('txModalTitle');
-            const qtyLabel = document.getElementById('txQuantityLabel');
-            const docLabel = document.getElementById('txDocLabel');
             const submitBtn = document.getElementById('txSubmitBtn');
 
             if (type === 'IN') {
-                badge.className = 'text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800';
+                badge.className = 'text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800';
                 badge.innerText = 'INGRESO / RECEPCIÓN';
                 title.innerText = 'Ingreso de Psicotrópicos';
-                qtyLabel.innerText = `Cantidad a ingresar (${med.unit}) *`;
-                docLabel.innerText = 'N° de Remito Oficial / Factura Laboratorio *';
-                submitBtn.className = 'w-1/2 py-2 px-4 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition';
-                submitBtn.innerText = 'Registrar Ingreso';
+                submitBtn.className = 'w-1/2 py-2 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition';
+                submitBtn.innerText = 'Confirmar Ingreso';
             } else {
-                badge.className = 'text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-rose-100 text-rose-800';
-                badge.innerText = 'EGRESO / ARMADO PEDIDO';
-                title.innerText = 'Egreso por Pedido / Vale';
-                qtyLabel.innerText = `Cantidad a despachar (${med.unit}) *`;
-                docLabel.innerText = 'N° de Pedido / Receta Archivada / Vale *';
-                submitBtn.className = 'w-1/2 py-2 px-4 rounded-lg bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold transition';
-                submitBtn.innerText = 'Registrar Egreso';
+                badge.className = 'text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-rose-100 text-rose-800';
+                badge.innerText = 'EGRESO / DESPACHO';
+                title.innerText = 'Egreso por Pedido';
+                submitBtn.className = 'w-1/2 py-2 px-3 rounded-lg bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold transition';
+                submitBtn.innerText = 'Confirmar Egreso';
             }
 
             document.getElementById('txModal').classList.remove('hidden');
@@ -1437,6 +1357,8 @@
 
         function submitTransaction(e) {
             e.preventDefault();
+            if (!ensureOperatorSelected()) return;
+
             const medId = document.getElementById('txMedId').value;
             const type = document.getElementById('txType').value;
             const qty = parseInt(document.getElementById('txQuantity').value);
@@ -1447,21 +1369,19 @@
             if (!med) return;
 
             const prevStock = med.stock;
-
             if (type === 'OUT' && qty > med.stock) {
-                showToast(`Error: Stock insuficiente (${med.stock} ${med.unit} disponibles)`);
+                showToast(`Stock insuficiente (${med.stock} disponibles)`);
                 return;
             }
 
-            if (type === 'IN') {
-                med.stock += qty;
-            } else {
-                med.stock -= qty;
-            }
+            if (type === 'IN') med.stock += qty;
+            else med.stock -= qty;
 
             logs.unshift({
                 id: 'log-' + Date.now(),
+                medId: med.id,
                 timestamp: new Date().toLocaleString('es-AR'),
+                operator: currentOperator,
                 medName: `${med.name} (${med.lab})`,
                 type: type,
                 qty: qty,
@@ -1469,17 +1389,94 @@
                 docRef: docRef,
                 balanceBefore: prevStock,
                 balanceAfter: med.stock,
-                notes: notes || (type === 'IN' ? 'Recepción de mercadería' : 'Despacho de pedido')
+                notes: notes || (type === 'IN' ? 'Recepción' : 'Despacho')
             });
 
             saveMeds();
             saveLogs();
             closeTxModal();
             renderApp();
-            showToast(`Stock actualizado correctamente: ${med.stock} ${med.unit}`);
+            showToast(`Stock actualizado: ${med.stock} ${med.unit}`);
         }
 
-        // Medication Create & Edit Modal
+        function openProductHistoryModal(medId) {
+            const med = medications.find(m => m.id === medId);
+            if (!med) return;
+
+            document.getElementById('productHistoryTitle').innerText = med.name;
+            document.getElementById('productHistorySubtitle').innerText = `${med.drug} • Laboratorio: ${med.lab}`;
+
+            const summaryEl = document.getElementById('productHistorySummary');
+            summaryEl.innerHTML = `
+                <div>
+                    <span class="text-slate-400 block text-[10px]">STOCK ACTUAL</span>
+                    <span class="font-bold text-sm text-slate-800">${med.stock} ${med.unit}</span>
+                </div>
+                <div>
+                    <span class="text-slate-400 block text-[10px]">LOTE & VTO</span>
+                    <span class="font-medium text-slate-700">${med.batch || 'S/L'} (${med.expiry || 'S/F'})</span>
+                </div>
+                <div>
+                    <span class="text-slate-400 block text-[10px]">UBICACIÓN</span>
+                    <span class="font-medium text-slate-700">${med.location}</span>
+                </div>
+            `;
+
+            const listEl = document.getElementById('productHistoryList');
+            // Filtrar movimientos por ID o por coincidencia de nombre
+            const medLogs = logs.filter(l => l.medId === med.id || (l.medName && l.medName.includes(med.name)));
+
+            if (medLogs.length === 0) {
+                listEl.innerHTML = `
+                    <div class="text-center py-8 bg-slate-50 rounded-xl border border-dashed border-slate-200">
+                        <p class="text-xs text-slate-500 font-semibold">Sin movimientos registrados para este producto</p>
+                        <p class="text-[11px] text-slate-400 mt-0.5">Los próximos ingresos o egresos aparecerán acá detallados.</p>
+                    </div>
+                `;
+            } else {
+                listEl.innerHTML = medLogs.map(l => {
+                    const isIngreso = l.type === 'IN';
+                    const isEgreso = l.type === 'OUT';
+                    const badgeClass = isIngreso ? 'bg-emerald-100 text-emerald-800 border-emerald-200' : isEgreso ? 'bg-rose-100 text-rose-800 border-rose-200' : 'bg-indigo-100 text-indigo-800 border-indigo-200';
+                    const typeLabel = isIngreso ? 'INGRESO' : isEgreso ? 'EGRESO' : 'RECUENTO';
+
+                    return `
+                        <div class="p-3 bg-slate-50 hover:bg-slate-100/70 rounded-xl border border-slate-200 text-xs transition">
+                            <div class="flex items-center justify-between mb-1">
+                                <div class="flex items-center gap-1.5">
+                                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-full border ${badgeClass}">
+                                        ${typeLabel}
+                                    </span>
+                                    <span class="font-extrabold text-slate-900">${isEgreso ? '-' : '+'}${l.qty} ${l.unit || ''}</span>
+                                </div>
+                                <span class="text-[11px] text-slate-400">${l.timestamp}</span>
+                            </div>
+
+                            <div class="flex items-center justify-between text-slate-600 text-[11px] mt-1 pt-1 border-t border-slate-200/60">
+                                <div>
+                                    <span>👤 Operó: <b class="text-slate-900 bg-white px-1.5 py-0.5 rounded border border-slate-200">${l.operator || 'Sin registrar'}</b></span>
+                                </div>
+                                <div class="text-slate-500 font-mono text-[10px]">
+                                    Saldo: ${l.balanceBefore} ➔ <b>${l.balanceAfter}</b>
+                                </div>
+                            </div>
+
+                            <div class="text-[11px] text-slate-500 mt-1">
+                                <span>📄 Remito/Doc: <b class="text-slate-700">${l.docRef || 'S/D'}</b></span>
+                                ${l.notes ? `<span class="italic text-slate-400 ml-1.5">(${l.notes})</span>` : ''}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            document.getElementById('productHistoryModal').classList.remove('hidden');
+        }
+
+        function closeProductHistoryModal() {
+            document.getElementById('productHistoryModal').classList.add('hidden');
+        }
+
         function openNewMedModal() {
             document.getElementById('medModalTitle').innerText = 'Nuevo Fármaco Psicotrópico';
             document.getElementById('medFormId').value = '';
@@ -1562,25 +1559,14 @@
                     med.expiry = expiry;
                     med.stock = stock;
                     med.minStock = minStock;
-                    showToast('Fármaco actualizado con éxito');
+                    showToast('Fármaco actualizado');
                 }
             } else {
-                const newMed = {
+                medications.unshift({
                     id: 'med-' + Date.now(),
-                    name,
-                    drug,
-                    lab,
-                    barcode,
-                    presentation,
-                    unit,
-                    location,
-                    batch,
-                    expiry,
-                    stock,
-                    minStock
-                };
-                medications.unshift(newMed);
-                showToast('Nuevo fármaco incorporado al catálogo');
+                    name, drug, lab, barcode, presentation, unit, location, batch, expiry, stock, minStock
+                });
+                showToast('Fármaco creado');
             }
 
             saveMeds();
@@ -1588,46 +1574,25 @@
             renderApp();
         }
 
-        // Delete Medications
-        function confirmDeleteMed(medId) {
-            const med = medications.find(m => m.id === medId);
-            if (!med) return;
-
-            openConfirmModal(
-                `¿Eliminar fármaco?`,
-                `Estás por eliminar "${med.name}" (${med.lab}). Esta acción quitará el producto del stock permanentemente.`,
-                () => {
-                    medications = medications.filter(m => m.id !== medId);
-                    saveMeds();
-                    renderApp();
-                    showToast('Fármaco eliminado correctamente');
-                }
-            );
-        }
-
         function deleteMedFromForm() {
             const id = document.getElementById('medFormId').value;
             if (!id) return;
+            medications = medications.filter(m => m.id !== id);
+            saveMeds();
             closeMedModal();
-            confirmDeleteMed(id);
+            renderApp();
+            showToast('Fármaco eliminado');
         }
 
-        // Manage Laboratories
         function openNewLabPrompt() {
-            const name = prompt("Ingrese el nombre del nuevo laboratorio:");
+            const name = prompt("Nombre del nuevo laboratorio:");
             if (!name) return;
             const clean = name.trim();
-            if (!clean) return;
-
-            if (laboratories.some(l => l.toLowerCase() === clean.toLowerCase())) {
-                showToast("El laboratorio ya se encuentra registrado");
-                return;
-            }
-
+            if (!clean || laboratories.includes(clean)) return;
             laboratories.push(clean);
             saveLabs();
             renderApp();
-            showToast(`Laboratorio "${clean}" agregado exitosamente`);
+            showToast(`Laboratorio "${clean}" agregado`);
         }
 
         function openManageLabsModal() {
@@ -1642,152 +1607,43 @@
         function addLaboratoryInline() {
             const input = document.getElementById('newLabInlineInput');
             const clean = input.value.trim();
-            if (!clean) return;
-
-            if (laboratories.some(l => l.toLowerCase() === clean.toLowerCase())) {
-                showToast("Ese laboratorio ya existe");
-                return;
-            }
-
+            if (!clean || laboratories.includes(clean)) return;
             laboratories.push(clean);
             input.value = '';
             saveLabs();
             renderApp();
             renderManageLabsList();
-            showToast(`Laboratorio "${clean}" agregado`);
         }
 
         function renderManageLabsList() {
             const list = document.getElementById('manageLabsList');
             if (!list) return;
-
-            if (laboratories.length === 0) {
-                list.innerHTML = `<div class="p-4 text-center text-xs text-slate-400">No hay laboratorios cargados</div>`;
-                return;
-            }
-
-            list.innerHTML = laboratories.map(lab => {
-                const count = medications.filter(m => m.lab === lab).length;
-                return `
-                    <div class="flex items-center justify-between p-2.5 hover:bg-slate-50 transition">
-                        <div class="flex items-center gap-2">
-                            <span class="text-xs font-bold text-slate-800">${lab}</span>
-                            <span class="text-[10px] bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full font-medium">${count} medicamentos</span>
-                        </div>
-                        <div class="flex items-center gap-1">
-                            <button onclick="editLaboratoryName('${lab}')" class="p-1 text-slate-400 hover:text-indigo-600 rounded transition" title="Corregir nombre">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
-                            </button>
-                            <button onclick="deleteLaboratory('${lab}')" class="p-1 text-slate-400 hover:text-rose-600 rounded transition" title="Eliminar laboratorio">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                            </button>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        function editLaboratoryName(oldName) {
-            const newName = prompt(`Corregir nombre del laboratorio "${oldName}":`, oldName);
-            if (!newName) return;
-            const clean = newName.trim();
-            if (!clean || clean === oldName) return;
-
-            const idx = laboratories.indexOf(oldName);
-            if (idx !== -1) {
-                laboratories[idx] = clean;
-            }
-
-            let updatedCount = 0;
-            medications.forEach(m => {
-                if (m.lab === oldName) {
-                    m.lab = clean;
-                    updatedCount++;
-                }
-            });
-
-            if (selectedLabFilter === oldName) {
-                selectedLabFilter = clean;
-            }
-
-            saveLabs();
-            saveMeds();
-            renderApp();
-            renderManageLabsList();
-            showToast(`Laboratorio actualizado a "${clean}" (${updatedCount} fármacos vinculados)`);
-        }
-
-        function confirmDeleteLabDirect(lab) {
-            deleteLaboratory(lab);
+            list.innerHTML = laboratories.map(lab => `
+                <div class="flex items-center justify-between p-2">
+                    <span class="text-xs font-bold text-slate-800">${lab}</span>
+                    <button onclick="deleteLaboratory('${lab}')" class="p-1 text-slate-400 hover:text-rose-600 rounded">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                    </button>
+                </div>
+            `).join('');
         }
 
         function deleteLaboratory(lab) {
-            const count = medications.filter(m => m.lab === lab).length;
-
-            if (count > 0) {
-                openConfirmModal(
-                    `¿Eliminar laboratorio "${lab}"?`,
-                    `Atención: Existen ${count} fármaco(s) asignados a ${lab}. Si lo eliminas, deberás reasignarlos a otro laboratorio.`,
-                    () => executeDeleteLab(lab)
-                );
-            } else {
-                openConfirmModal(
-                    `¿Eliminar laboratorio?`,
-                    `¿Deseas quitar "${lab}" de la lista de laboratorios disponibles?`,
-                    () => executeDeleteLab(lab)
-                );
-            }
-        }
-
-        function executeDeleteLab(lab) {
             laboratories = laboratories.filter(l => l !== lab);
             if (selectedLabFilter === lab) selectedLabFilter = 'ALL';
             saveLabs();
             renderApp();
             renderManageLabsList();
-            showToast(`Laboratorio "${lab}" eliminado`);
         }
 
-        // Confirmation Modal Generic Helper
-        let onConfirmAction = null;
-
-        function openConfirmModal(title, msg, onConfirm) {
-            document.getElementById('confirmTitle').innerText = title;
-            document.getElementById('confirmMessage').innerText = msg;
-            onConfirmAction = onConfirm;
-
-            document.getElementById('confirmAcceptBtn').onclick = () => {
-                if (typeof onConfirmAction === 'function') onConfirmAction();
-                closeConfirmModal();
-            };
-
-            document.getElementById('confirmCancelBtn').onclick = closeConfirmModal;
-            document.getElementById('confirmModal').classList.remove('hidden');
+        function openCloudModal() {
+            document.getElementById('cloudModal').classList.remove('hidden');
         }
 
-        function closeConfirmModal() {
-            document.getElementById('confirmModal').classList.add('hidden');
-            onConfirmAction = null;
+        function closeCloudModal() {
+            document.getElementById('cloudModal').classList.add('hidden');
         }
 
-        // Reset All Data
-        function resetAllDataConfirm() {
-            openConfirmModal(
-                "¿Restablecer datos de fábrica?",
-                "Esta acción reiniciará los laboratorios y fármacos a la configuración estándar inicial. Se perderán los cambios manuales.",
-                () => {
-                    laboratories = [...DEFAULT_LABS];
-                    medications = [...DEFAULT_MEDS];
-                    selectedLabFilter = 'ALL';
-                    saveLabs();
-                    saveMeds();
-                    renderApp();
-                    showToast("Datos restablecidos con éxito");
-                }
-            );
-        }
-
-        // Audit Logs & Drawer
         function toggleAuditDrawer(show) {
             const drawer = document.getElementById('auditDrawer');
             if (show) drawer.classList.remove('hidden');
@@ -1797,56 +1653,29 @@
         function renderAuditLogs() {
             const container = document.getElementById('auditLogContainer');
             if (!container) return;
-
             if (logs.length === 0) {
-                container.innerHTML = `<p class="text-xs text-slate-400 text-center py-6">No hay registros de movimientos aún.</p>`;
+                container.innerHTML = `<p class="text-xs text-slate-400 text-center py-6">No hay registros aún.</p>`;
                 return;
             }
-
             container.innerHTML = logs.map(l => `
-                <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs space-y-1">
+                <div class="p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs space-y-0.5">
                     <div class="flex items-center justify-between">
                         <span class="font-bold text-slate-800">${l.medName}</span>
-                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${l.type === 'IN' ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}">
-                            ${l.type === 'IN' ? '+ INGRESO' : '- EGRESO'}
+                        <span class="text-[9px] font-bold px-1.5 py-0.2 rounded-full ${l.type === 'IN' ? 'bg-emerald-100 text-emerald-800' : l.type === 'OUT' ? 'bg-rose-100 text-rose-800' : 'bg-indigo-100 text-indigo-800'}">
+                            ${l.type === 'IN' ? '+ INGRESO' : l.type === 'OUT' ? '- EGRESO' : '📋 RECUENTO'}
                         </span>
                     </div>
-                    <div class="flex items-center justify-between text-slate-600">
-                        <span>Cant: <b>${l.qty} ${l.unit || ''}</b></span>
+                    <div class="flex items-center justify-between text-slate-600 text-[11px]">
+                        <span>Cant: <b>${l.qty} ${l.unit || ''}</b> (Saldo: ${l.balanceBefore} ➔ ${l.balanceAfter})</span>
                         <span class="text-[10px] text-slate-400">${l.timestamp}</span>
                     </div>
-                    <div class="text-[11px] text-slate-500">Doc Ref: <span class="font-semibold text-slate-700">${l.docRef}</span></div>
-                    <div class="text-[11px] text-slate-400 italic">Balance: ${l.balanceBefore} ➔ ${l.balanceAfter} | ${l.notes}</div>
+                    <div class="text-[10px] text-slate-500">
+                        <span>👤 <b>${l.operator || 'Sin registrar'}</b> | Doc: ${l.docRef} | ${l.notes}</span>
+                    </div>
                 </div>
             `).join('');
         }
 
-        // Export to CSV
-        function exportToCSV() {
-            if (medications.length === 0) {
-                showToast("No hay datos para exportar");
-                return;
-            }
-
-            let csv = "\uFEFF";
-            csv += "ID;Código de Barras;Fármaco;Droga;Laboratorio;Presentación;Unidad;Ubicación;Lote;Vencimiento;Stock Actual;Punto Mínimo\n";
-
-            medications.forEach(m => {
-                csv += `"${m.id}";"${m.barcode || ''}";"${m.name}";"${m.drug}";"${m.lab}";"${m.presentation}";"${m.unit}";"${m.location}";"${m.batch || ''}";"${m.expiry || ''}";${m.stock};${m.minStock}\n`;
-            });
-
-            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement("a");
-            link.setAttribute("href", url);
-            link.setAttribute("download", `Drogueria_Generia_Stock_${new Date().toISOString().slice(0, 10)}.csv`);
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            showToast("Planilla CSV descargada");
-        }
-
-        // Feedback Toast
         function showToast(msg) {
             const toast = document.getElementById('toast');
             const msgEl = document.getElementById('toastMsg');
@@ -1854,7 +1683,7 @@
             toast.classList.remove('translate-y-20', 'opacity-0', 'pointer-events-none');
             setTimeout(() => {
                 toast.classList.add('translate-y-20', 'opacity-0', 'pointer-events-none');
-            }, 3000);
+            }, 2500);
         }
     </script>
 </body>
