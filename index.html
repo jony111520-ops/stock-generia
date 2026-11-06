@@ -27,74 +27,70 @@
 </head>
 <body class="bg-slate-100 text-slate-800 antialiased min-h-screen flex flex-col">
 
-    <!-- Top Header Clásico -->
+    <!-- Top Header Clásico y Compacto -->
     <header class="bg-slate-900 text-white border-b border-slate-800 sticky top-0 z-30 shadow-md">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex justify-between items-center gap-3">
+        <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-2.5 sm:py-3 flex flex-wrap md:flex-nowrap justify-between items-center gap-2 sm:gap-3">
             
-            <!-- Branding -->
-            <div class="flex items-center gap-3">
-                <div class="bg-emerald-500 text-slate-950 p-2 rounded-xl flex items-center justify-center font-black shadow-sm">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
-                    </svg>
-                </div>
-                <div>
-                    <div class="flex items-center gap-2">
-                        <h1 class="font-bold text-lg leading-tight tracking-tight">Droguería Generia</h1>
-                        <span class="text-xs bg-emerald-500/20 text-emerald-300 font-semibold px-2 py-0.5 rounded-full border border-emerald-500/30">Ciudadela</span>
+            <!-- Branding + Selector de Usuario Integrado -->
+            <div class="flex items-center gap-2.5 sm:gap-3 flex-wrap sm:flex-nowrap">
+                <div class="flex items-center gap-2">
+                    <div class="bg-emerald-500 text-slate-950 p-1.5 sm:p-2 rounded-xl flex items-center justify-center font-black shadow-sm shrink-0">
+                        <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                        </svg>
                     </div>
-                    <div class="flex items-center gap-2 mt-0.5">
-                        <p class="text-xs text-slate-400 hidden sm:block">Sector Psicotrópicos & Estupefacientes</p>
-                        <span id="cloudStatusBadge" class="inline-flex items-center gap-1 text-[11px] font-medium text-amber-300 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-full">
+                    <div class="leading-tight">
+                        <h1 class="font-bold text-base sm:text-lg leading-tight tracking-tight">Droguería Generia</h1>
+                        <span id="cloudStatusBadge" class="inline-flex items-center gap-1 text-[10px] sm:text-[11px] font-medium text-amber-300 bg-amber-500/10 border border-amber-500/20 px-1.5 py-0.2 rounded-full">
                             <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
                             <span>Memoria Local</span>
                         </span>
                     </div>
                 </div>
-            </div>
 
-            <!-- Operador Responsable & Action Buttons -->
-            <div class="flex items-center gap-2 flex-wrap justify-end">
-                <!-- Selector de Operador Activo -->
-                <div class="flex items-center bg-slate-800 border border-slate-700 rounded-lg p-1 gap-1.5 shadow-sm">
-                    <div class="flex items-center gap-1.5 px-2 py-1 bg-slate-900 rounded-md">
+                <!-- Selector de Usuario justo al lado de la marca (en reemplazo de Ciudadela) -->
+                <div class="flex items-center bg-slate-800 border border-slate-700 rounded-lg p-0.5 sm:p-1 gap-1 shadow-sm">
+                    <div class="flex items-center gap-1 px-2 py-1 bg-slate-900 rounded-md">
                         <span class="text-xs">👤</span>
-                        <select id="activeOperatorSelect" onchange="handleOperatorSelectChange(this.value)" class="bg-transparent text-white text-xs font-bold focus:outline-none cursor-pointer">
+                        <select id="activeOperatorSelect" onchange="handleOperatorSelectChange(this.value)" class="bg-transparent text-white text-xs font-bold focus:outline-none cursor-pointer max-w-[130px] sm:max-w-none truncate">
                             <!-- Opciones cargadas dinámicamente -->
                         </select>
                     </div>
-                    <button onclick="promptNewOperator()" title="Ingresar nuevo usuario" class="px-2 py-1 text-[11px] bg-slate-700 hover:bg-slate-600 text-emerald-400 font-bold rounded-md transition flex items-center gap-1">
+                    <button onclick="promptNewOperator()" title="Ingresar nuevo usuario" class="px-2 py-1 text-[11px] bg-slate-700 hover:bg-slate-600 text-emerald-400 font-bold rounded-md transition flex items-center shrink-0">
                         <span>+ Otro</span>
                     </button>
                 </div>
+            </div>
 
+            <!-- Action Buttons alineados cómodamente -->
+            <div class="flex items-center gap-1.5 sm:gap-2 flex-wrap justify-end">
                 <!-- Botón Escáner -->
-                <button onclick="openScannerModal()" class="flex items-center gap-1.5 px-3 py-2 bg-sky-600 hover:bg-sky-500 text-white rounded-lg text-xs font-bold shadow-sm transition">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path></svg>
-                    <span>Escanear Código</span>
+                <button onclick="openScannerModal()" class="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 bg-sky-600 hover:bg-sky-500 text-white rounded-lg text-xs font-bold shadow-sm transition">
+                    <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path></svg>
+                    <span>Escanear</span>
                 </button>
 
                 <!-- Botón Ventas Vencimientos -->
-                <button onclick="openExpiryReportModal()" class="flex items-center gap-1.5 px-3 py-2 bg-amber-600 hover:bg-amber-500 text-white rounded-lg text-xs font-bold shadow-sm transition">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                    <span>Vencimientos (Ventas)</span>
+                <button onclick="openExpiryReportModal()" class="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 bg-amber-600 hover:bg-amber-500 text-white rounded-lg text-xs font-bold shadow-sm transition">
+                    <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                    <span>Ventas</span>
                 </button>
 
                 <!-- Botón Nuevo Fármaco -->
-                <button onclick="openNewMedModal()" class="flex items-center gap-1.5 px-3 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-semibold shadow-sm transition">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                    <span>Nuevo Fármaco</span>
+                <button onclick="openNewMedModal()" class="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-semibold shadow-sm transition">
+                    <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                    <span>+ Fármaco</span>
                 </button>
 
                 <!-- Botón Libro de Actas -->
-                <button onclick="toggleAuditDrawer(true)" class="flex items-center gap-1.5 px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-xs font-semibold border border-slate-700 transition">
-                    <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                    <span>Libro de Actas</span>
+                <button onclick="toggleAuditDrawer(true)" class="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-xs font-semibold border border-slate-700 transition">
+                    <svg class="w-4 h-4 text-emerald-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                    <span>Actas</span>
                 </button>
 
                 <!-- Botón Nube -->
-                <button onclick="openCloudModal()" class="flex items-center gap-1.5 px-3 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold shadow-sm transition">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 00-9.78 2.096A4.001 4.001 0 003 15z"></path></svg>
+                <button onclick="openCloudModal()" class="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold shadow-sm transition">
+                    <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 00-9.78 2.096A4.001 4.001 0 003 15z"></path></svg>
                     <span>Nube</span>
                 </button>
             </div>
@@ -664,17 +660,26 @@
         }
 
         function renderOperatorSelect() {
-            const sel = document.getElementById('activeOperatorSelect');
-            if (!sel) return;
+            const selDesktop = document.getElementById('activeOperatorSelect');
+            const selMobile = document.getElementById('activeOperatorSelectMobile');
 
-            const placeholderOption = `<option value="" ${!currentOperator ? 'selected' : ''} disabled class="bg-slate-900 text-slate-400">👤 Seleccionar Usuario...</option>`;
+            const placeholderDesktop = `<option value="" ${!currentOperator ? 'selected' : ''} disabled class="bg-slate-900 text-slate-400">👤 Seleccionar Usuario...</option>`;
+            const placeholderMobile = `<option value="" ${!currentOperator ? 'selected' : ''} disabled class="bg-slate-900 text-slate-400">Usuario...</option>`;
 
-            sel.innerHTML = placeholderOption + knownOperators.map(op => `
+            const optionsBody = knownOperators.map(op => `
                 <option value="${op}" ${op === currentOperator ? 'selected' : ''} class="bg-slate-900 text-white font-semibold">${op}</option>
             `).join('') + `
                 <option value="__CUSTOM__" class="bg-slate-900 text-emerald-400 font-bold">+ Escribir mi nombre...</option>
             `;
-            sel.value = currentOperator || "";
+
+            if (selDesktop) {
+                selDesktop.innerHTML = placeholderDesktop + optionsBody;
+                selDesktop.value = currentOperator || "";
+            }
+            if (selMobile) {
+                selMobile.innerHTML = placeholderMobile + optionsBody;
+                selMobile.value = currentOperator || "";
+            }
         }
 
         function handleOperatorSelectChange(val) {
