@@ -1,0 +1,1342 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Droguería Generia - Test Móvil & PC</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <!-- Camera barcode scanner -->
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        #barcodeVideoContainer video {
+            border-radius: 0.75rem;
+            object-fit: cover;
+            width: 100% !important;
+            height: auto !important;
+        }
+        /* Botones optimizados para el dedo en el depósito */
+        @media (max-width: 640px) {
+            .mobile-touch-btn {
+                min-height: 44px;
+                font-size: 13px;
+            }
+        }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-800 antialiased min-h-screen flex flex-col pb-20 md:pb-0">
+
+    <!-- Top Header -->
+    <header class="bg-slate-900 text-white border-b border-slate-800 sticky top-0 z-30 shadow-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex justify-between items-center gap-2">
+            
+            <!-- Branding -->
+            <div class="flex items-center gap-2.5 sm:gap-3">
+                <div class="bg-emerald-500 text-slate-950 p-2 rounded-xl flex items-center justify-center font-black shadow-sm">
+                    <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                    </svg>
+                </div>
+                <div>
+                    <div class="flex items-center gap-1.5 sm:gap-2">
+                        <h1 class="font-bold text-base sm:text-lg leading-tight tracking-tight">Droguería Generia</h1>
+                        <span class="text-[10px] sm:text-xs bg-emerald-500/20 text-emerald-300 font-semibold px-2 py-0.5 rounded-full border border-emerald-500/30">Ciudadela</span>
+                        <span class="text-[10px] bg-amber-500/20 text-amber-300 font-bold px-1.5 py-0.5 rounded border border-amber-500/30">TEST</span>
+                    </div>
+                    <div class="flex items-center gap-2 mt-0.5">
+                        <span id="cloudStatusBadge" class="inline-flex items-center gap-1 text-[10px] sm:text-[11px] font-medium text-amber-300 bg-amber-500/10 border border-amber-500/20 px-2 py-0.2 rounded-full">
+                            <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
+                            <span>Memoria Local</span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons: En PC se muestran todos, en móvil se muestran los principales -->
+            <div class="flex items-center gap-1.5 sm:gap-2">
+                <!-- Botón Escáner destacado (visible en PC y Celu) -->
+                <button onclick="openScannerModal()" class="flex items-center gap-1.5 px-3 py-2 bg-sky-600 hover:bg-sky-500 text-white rounded-lg text-xs font-bold shadow-sm transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path></svg>
+                    <span class="hidden sm:inline">Escanear Código</span>
+                    <span class="sm:hidden font-bold">Cámara</span>
+                </button>
+
+                <!-- Botón Ventas Vencimientos -->
+                <button onclick="openExpiryReportModal()" class="flex items-center gap-1.5 px-3 py-2 bg-amber-600 hover:bg-amber-500 text-white rounded-lg text-xs font-bold shadow-sm transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                    <span class="hidden sm:inline">Vencimientos (Ventas)</span>
+                    <span class="sm:hidden font-bold">Ventas</span>
+                </button>
+
+                <!-- Botones que se muestran solo en PC para no saturar el celular -->
+                <button onclick="openNewMedModal()" class="hidden md:flex items-center gap-1.5 px-3 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-semibold shadow-sm transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                    <span>Nuevo Fármaco</span>
+                </button>
+                <button onclick="toggleAuditDrawer(true)" class="hidden md:flex items-center gap-1.5 px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-xs font-semibold border border-slate-700 transition">
+                    <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                    <span>Libro de Actas</span>
+                </button>
+                <button onclick="openCloudModal()" class="hidden md:flex items-center gap-1.5 px-3 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold shadow-sm transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 00-9.78 2.096A4.001 4.001 0 003 15z"></path></svg>
+                    <span>Nube</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6 flex-1 w-full flex flex-col gap-4 sm:gap-6">
+
+        <!-- Top KPIs -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-4">
+            <div class="bg-white p-3 sm:p-4 rounded-xl border border-slate-200 shadow-sm">
+                <span class="text-[10px] sm:text-xs font-medium text-slate-500 uppercase tracking-wider block">Fármacos</span>
+                <span id="kpiTotalSkus" class="text-xl sm:text-2xl font-bold text-slate-900 mt-0.5 block">0</span>
+            </div>
+            <div class="bg-white p-3 sm:p-4 rounded-xl border border-slate-200 shadow-sm">
+                <span class="text-[10px] sm:text-xs font-medium text-slate-500 uppercase tracking-wider block">Stock Total</span>
+                <span id="kpiTotalUnits" class="text-xl sm:text-2xl font-bold text-slate-900 mt-0.5 block">0</span>
+            </div>
+            <div class="bg-white p-3 sm:p-4 rounded-xl border border-rose-200 bg-rose-50/40 shadow-sm">
+                <span class="text-[10px] sm:text-xs font-semibold text-rose-700 uppercase tracking-wider block">Bajo Mínimo</span>
+                <span id="kpiCriticalCount" class="text-xl sm:text-2xl font-bold text-rose-700 mt-0.5 block">0</span>
+            </div>
+            <div onclick="setExpiryFilterQuick()" class="bg-white p-3 sm:p-4 rounded-xl border border-amber-200 bg-amber-50/40 shadow-sm cursor-pointer hover:bg-amber-100/50 transition">
+                <div class="flex items-center justify-between">
+                    <span class="text-[10px] sm:text-xs font-semibold text-amber-800 uppercase tracking-wider block">Vto. Corto</span>
+                    <span class="text-[9px] bg-amber-200 text-amber-900 font-bold px-1 rounded">&lt;6m</span>
+                </div>
+                <span id="kpiExpiryNearCount" class="text-xl sm:text-2xl font-bold text-amber-700 mt-0.5 block">0</span>
+            </div>
+            <div class="hidden"><span id="kpiTodayTrans">0</span></div>
+        </div>
+
+        <!-- Filter and Search Card -->
+        <div class="bg-white p-3 sm:p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col gap-3">
+            
+            <!-- Search bar & filters -->
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-2.5">
+                <div class="md:col-span-5 relative">
+                    <svg class="w-4 h-4 absolute left-3 top-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                    <input type="text" id="searchInput" oninput="renderApp()" placeholder="Buscar fármaco, droga, lote, código..." class="w-full pl-9 pr-9 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                    <button onclick="openScannerModal()" class="absolute right-2 top-2 p-1 text-slate-400 hover:text-sky-600 rounded">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path></svg>
+                    </button>
+                </div>
+
+                <div class="md:col-span-3">
+                    <select id="filterPresentation" onchange="renderApp()" class="w-full py-2 px-2.5 border border-slate-300 rounded-lg text-xs sm:text-sm bg-white text-slate-700 focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                        <option value="ALL">📦 Todas las Presentaciones</option>
+                        <option value="Cajas estuchadas">Cajas estuchadas</option>
+                        <option value="Blisters sueltos">Blisters sueltos</option>
+                        <option value="Ampollas">Ampollas</option>
+                    </select>
+                </div>
+
+                <div class="md:col-span-4">
+                    <select id="filterStatus" onchange="renderApp()" class="w-full py-2 px-2.5 border border-slate-300 rounded-lg text-xs sm:text-sm bg-white text-slate-700 focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                        <option value="ALL">🟢 Todos los Estados</option>
+                        <option value="LOW">⚠️ Stock Crítico</option>
+                        <option value="EXP_SHORT">⏳ Vencimiento Corto (&lt; 6 meses)</option>
+                        <option value="EXP_CRITICAL">🚨 Vto. Urgente (&lt; 60 días)</option>
+                        <option value="OK">✔️ Stock Óptimo</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Laboratorios scrollable horizontalmente en celular -->
+            <div class="border-t border-slate-100 pt-2.5">
+                <div class="flex items-center justify-between gap-2 mb-2">
+                    <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Laboratorio:</span>
+                    <button onclick="openManageLabsModal()" class="text-[11px] text-slate-600 hover:text-slate-900 font-semibold underline">Gestionar</button>
+                </div>
+                <div id="labPillContainer" class="flex items-center gap-1.5 overflow-x-auto pb-1 custom-scrollbar">
+                    <!-- Injected -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Inventory Grid -->
+        <div>
+            <div class="flex items-center justify-between mb-2.5">
+                <h2 class="text-xs sm:text-sm font-bold text-slate-700 uppercase tracking-wider flex items-center gap-2">
+                    <span>Fármacos en Depósito</span>
+                    <span id="filteredCountBadge" class="bg-slate-200 text-slate-700 text-[10px] sm:text-xs py-0.5 px-2 rounded-full font-semibold">0</span>
+                </h2>
+                <span class="text-[11px] text-slate-500 hidden sm:inline">Droguería Generia (Ciudadela)</span>
+            </div>
+
+            <div id="inventoryGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+                <!-- Cards injected -->
+            </div>
+
+            <!-- Empty State -->
+            <div id="emptyState" class="hidden text-center py-10 bg-white rounded-xl border border-slate-200">
+                <p class="text-slate-600 font-semibold text-sm">No se encontraron productos con los filtros aplicados</p>
+                <p class="text-xs text-slate-400 mt-1">Podés crear uno con el botón "+ Nuevo Fármaco"</p>
+            </div>
+        </div>
+    </main>
+
+    <!-- Barra de Navegación Inferior Flotante (Solo visible en Celulares) -->
+    <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-slate-900 text-white border-t border-slate-800 z-40 px-3 py-1.5 flex justify-around items-center shadow-2xl">
+        <button onclick="window.scrollTo({top: 0, behavior: 'smooth'}); document.getElementById('searchInput').focus();" class="flex flex-col items-center p-1.5 text-slate-400 hover:text-white">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+            <span class="text-[9px] mt-0.5 font-medium">Buscar</span>
+        </button>
+
+        <button onclick="openNewMedModal()" class="flex flex-col items-center p-1.5 text-slate-400 hover:text-white">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+            <span class="text-[9px] mt-0.5 font-medium">+ Fármaco</span>
+        </button>
+
+        <!-- Botón Central Escáner Gigante para el Pulgar -->
+        <button onclick="openScannerModal()" class="flex flex-col items-center -mt-5 bg-sky-600 hover:bg-sky-500 text-white p-3 rounded-full shadow-lg border-2 border-slate-900 active:scale-95 transition">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path></svg>
+        </button>
+
+        <button onclick="toggleAuditDrawer(true)" class="flex flex-col items-center p-1.5 text-slate-400 hover:text-white">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+            <span class="text-[9px] mt-0.5 font-medium">Actas</span>
+        </button>
+
+        <button onclick="openCloudModal()" class="flex flex-col items-center p-1.5 text-slate-400 hover:text-white">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 00-9.78 2.096A4.001 4.001 0 003 15z"></path></svg>
+            <span class="text-[9px] mt-0.5 font-medium">Nube</span>
+        </button>
+    </nav>
+
+    <!-- Modal: Barcode Camera Scanner -->
+    <div id="scannerModal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-4 sm:p-5 shadow-2xl border border-slate-200">
+            <div class="flex items-center justify-between pb-2.5 border-b border-slate-100 mb-3">
+                <div class="flex items-center gap-2">
+                    <div class="p-1.5 bg-sky-100 text-sky-700 rounded-lg">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path></svg>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-bold text-slate-900">Escáner de Barras</h3>
+                        <p class="text-[10px] text-slate-500">Cámara trasera para lectura de cajas</p>
+                    </div>
+                </div>
+                <button onclick="closeScannerModal()" class="text-slate-400 hover:text-slate-600 p-1">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+
+            <!-- Video Container -->
+            <div id="barcodeVideoContainer" class="w-full bg-slate-950 rounded-xl overflow-hidden min-h-[200px] flex items-center justify-center border border-slate-800 relative">
+                <div id="scannerModalPlaceholder" class="text-center p-4 text-slate-400 text-xs">
+                    Iniciando cámara trasera...
+                </div>
+            </div>
+
+            <!-- Scan result badge -->
+            <div id="scannerMatchedBox" class="mt-3 p-2.5 bg-slate-50 rounded-xl border border-slate-200 text-xs hidden">
+                <span class="text-[9px] uppercase font-bold text-slate-400 block">Producto Detectado:</span>
+                <p id="scannerMatchedTitle" class="font-bold text-slate-900 text-sm mt-0.5"></p>
+                <p id="scannerMatchedBarcode" class="font-mono text-emerald-600 text-[11px] mt-0.5"></p>
+                
+                <div class="grid grid-cols-2 gap-2 mt-2.5 pt-2 border-t border-slate-200">
+                    <button onclick="scannerTriggerTx('IN')" class="py-2 px-2 bg-emerald-600 text-white rounded-lg font-bold text-xs hover:bg-emerald-500 transition">
+                        + Ingreso
+                    </button>
+                    <button onclick="scannerTriggerTx('OUT')" class="py-2 px-2 bg-rose-600 text-white rounded-lg font-bold text-xs hover:bg-rose-500 transition">
+                        - Egreso
+                    </button>
+                </div>
+            </div>
+
+            <div class="mt-3 flex justify-between items-center text-xs">
+                <span class="text-slate-400 text-[10px]">Lee EAN-13, Datamatrix y QR</span>
+                <button onclick="closeScannerModal()" class="px-3 py-1.5 border border-slate-300 text-slate-700 font-semibold rounded-lg hover:bg-slate-100 transition">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Sales Expiration Report -->
+    <div id="expiryReportModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-lg w-full p-4 sm:p-6 shadow-2xl border border-slate-200">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-3">
+                <div class="flex items-center gap-2">
+                    <div class="p-1.5 bg-amber-100 text-amber-700 rounded-lg">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-bold text-slate-900">Vencimientos para Ventas</h3>
+                        <p class="text-[10px] text-slate-500">Lotes a liquidar antes de su caducidad</p>
+                    </div>
+                </div>
+                <button onclick="closeExpiryReportModal()" class="text-slate-400 hover:text-slate-600 p-1">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+
+            <textarea id="salesReportText" rows="7" readonly class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl font-mono text-xs text-slate-800 focus:outline-none mb-3 select-all"></textarea>
+
+            <div class="flex flex-col sm:flex-row items-center justify-between gap-2 border-t border-slate-100 pt-3">
+                <button onclick="shareReportWhatsApp()" class="w-full sm:w-auto flex items-center justify-center gap-1.5 px-3 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold transition">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
+                    <span>Enviar a WhatsApp</span>
+                </button>
+                <div class="flex items-center gap-2 w-full sm:w-auto justify-end">
+                    <button onclick="copySalesReportText()" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-lg text-xs transition">Copiar</button>
+                    <button onclick="closeExpiryReportModal()" class="px-3 py-2 border border-slate-300 text-slate-700 font-semibold rounded-lg text-xs hover:bg-slate-50 transition">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Stock Entry / Exit Transaction -->
+    <div id="txModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-5 shadow-2xl border border-slate-200">
+            <div class="flex items-start justify-between mb-3 pb-2.5 border-b border-slate-100">
+                <div>
+                    <span id="txModalBadge" class="text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full"></span>
+                    <h3 id="txModalTitle" class="text-base font-bold text-slate-900 mt-1">Registrar Movimiento</h3>
+                    <p id="txModalDrug" class="text-xs text-slate-500"></p>
+                </div>
+                <button onclick="closeTxModal()" class="text-slate-400 hover:text-slate-600 p-1">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+
+            <form id="txForm" onsubmit="submitTransaction(event)" class="space-y-3.5">
+                <input type="hidden" id="txMedId">
+                <input type="hidden" id="txType">
+
+                <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200 flex justify-between items-center text-xs">
+                    <div>
+                        <span class="text-slate-500 block text-[11px]">Stock Actual:</span>
+                        <span id="txCurrentStock" class="font-bold text-slate-800 text-sm">0</span>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-slate-500 block text-[11px]">Presentación:</span>
+                        <span id="txUnitLabel" class="font-semibold text-slate-700"></span>
+                    </div>
+                </div>
+
+                <div>
+                    <label id="txQuantityLabel" class="block text-xs font-bold text-slate-700 mb-1">Cantidad</label>
+                    <input type="number" id="txQuantity" min="1" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-lg font-bold text-slate-900 focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                </div>
+
+                <div>
+                    <label id="txDocLabel" class="block text-xs font-bold text-slate-700 mb-1">N° Remito Oficial</label>
+                    <input type="text" id="txDocRef" required placeholder="Ej: REM-004581" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Observaciones</label>
+                    <input type="text" id="txNotes" placeholder="Recepción / Entrega" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                </div>
+
+                <div class="flex items-center gap-2 pt-2">
+                    <button type="button" onclick="closeTxModal()" class="w-1/2 py-2 px-3 rounded-lg border border-slate-300 text-slate-700 text-xs font-semibold hover:bg-slate-100 transition">Cancelar</button>
+                    <button type="submit" id="txSubmitBtn" class="w-1/2 py-2 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition">Confirmar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Create / Edit Medication -->
+    <div id="medModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-xl w-full p-5 shadow-2xl border border-slate-200 max-h-[90vh] overflow-y-auto custom-scrollbar">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-3">
+                <h3 id="medModalTitle" class="text-sm font-bold text-slate-900">Nuevo Fármaco Psicotrópico</h3>
+                <button onclick="closeMedModal()" class="text-slate-400 hover:text-slate-600 p-1">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+
+            <form id="medForm" onsubmit="submitMedication(event)" class="space-y-3 text-xs">
+                <input type="hidden" id="medFormId">
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    <div class="sm:col-span-2">
+                        <label class="block font-bold text-slate-700 mb-1">Nombre Comercial & Concentración *</label>
+                        <input type="text" id="medName" required placeholder="Ej: Clonazepam 2mg x 30" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                    </div>
+
+                    <div class="sm:col-span-2">
+                        <label class="block font-bold text-slate-700 mb-1">Principio Activo (Droga) *</label>
+                        <input type="text" id="medDrug" required placeholder="Ej: Clonazepam" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                    </div>
+
+                    <div>
+                        <div class="flex items-center justify-between mb-1">
+                            <label class="font-bold text-slate-700">Laboratorio *</label>
+                            <button type="button" onclick="openNewLabPrompt()" class="text-[11px] text-emerald-600 font-bold hover:underline">+ Crear</button>
+                        </div>
+                        <select id="medLab" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block font-bold text-slate-700 mb-1">Presentación Física *</label>
+                        <select id="medPresentation" onchange="syncPresentationUnits()" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                            <option value="Cajas estuchadas">Cajas estuchadas</option>
+                            <option value="Blisters sueltos">Blisters sueltos</option>
+                            <option value="Ampollas">Ampollas</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block font-bold text-slate-700 mb-1">Unidad</label>
+                        <select id="medUnit" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                            <option value="Cajas">Cajas</option>
+                            <option value="Blisters">Blisters</option>
+                            <option value="Ampollas">Ampollas</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block font-bold text-slate-700 mb-1">Ubicación Física *</label>
+                        <input type="text" id="medLocation" required placeholder="Estante A / Bóveda" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                    </div>
+
+                    <div class="sm:col-span-2">
+                        <label class="block font-bold text-slate-700 mb-1">Código de Barras (EAN / Datamatrix)</label>
+                        <div class="flex gap-2">
+                            <input type="text" id="medBarcode" placeholder="Ej: 7798024310012" class="flex-1 px-3 py-2 border border-slate-300 rounded-lg text-sm font-mono focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                            <button type="button" onclick="scanBarcodeForForm()" class="px-3 py-2 bg-slate-800 text-white rounded-lg text-xs font-bold hover:bg-slate-700 transition flex items-center gap-1">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path></svg>
+                                <span>Capturar</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block font-bold text-slate-700 mb-1">N° de Lote</label>
+                        <input type="text" id="medBatch" placeholder="L-4890" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                    </div>
+
+                    <div>
+                        <label class="block font-bold text-slate-700 mb-1">Vencimiento</label>
+                        <input type="month" id="medExpiry" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                    </div>
+
+                    <div>
+                        <label class="block font-bold text-slate-700 mb-1">Stock Físico *</label>
+                        <input type="number" id="medStock" min="0" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm font-semibold focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                    </div>
+
+                    <div>
+                        <label class="block font-bold text-slate-700 mb-1">Punto Mínimo *</label>
+                        <input type="number" id="medMinStock" min="0" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm font-semibold focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-between pt-3 border-t border-slate-100">
+                    <button type="button" id="btnDeleteMedInForm" onclick="deleteMedFromForm()" class="hidden text-rose-600 font-bold hover:bg-rose-50 px-3 py-2 rounded-lg border border-rose-200 transition">
+                        Eliminar
+                    </button>
+                    <div class="flex items-center gap-2 ml-auto">
+                        <button type="button" onclick="closeMedModal()" class="px-3 py-2 rounded-lg border border-slate-300 text-slate-700 font-semibold hover:bg-slate-100 transition">Cancelar</button>
+                        <button type="submit" class="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold transition">Guardar</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Manage Labs -->
+    <div id="manageLabsModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-lg w-full p-5 shadow-2xl border border-slate-200">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-3">
+                <h3 class="text-sm font-bold text-slate-900">Gestionar Laboratorios</h3>
+                <button onclick="closeManageLabsModal()" class="text-slate-400 hover:text-slate-600 p-1">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            <div class="flex gap-2 mb-3">
+                <input type="text" id="newLabInlineInput" placeholder="Nombre de laboratorio..." class="flex-1 px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                <button onclick="addLaboratoryInline()" class="px-3 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-lg transition">+ Agregar</button>
+            </div>
+            <div id="manageLabsList" class="max-h-60 overflow-y-auto custom-scrollbar divide-y divide-slate-100 border border-slate-200 rounded-xl"></div>
+            <div class="mt-3 text-right">
+                <button onclick="closeManageLabsModal()" class="px-3 py-1.5 bg-slate-900 text-white rounded-lg text-xs font-semibold hover:bg-slate-800 transition">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Cloud Sync -->
+    <div id="cloudModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-5 shadow-2xl border border-slate-200">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-3">
+                <div class="flex items-center gap-2">
+                    <div class="p-1.5 bg-indigo-100 text-indigo-600 rounded-lg">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 00-9.78 2.096A4.001 4.001 0 003 15z"></path></svg>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-bold text-slate-900">Estado de la Nube</h3>
+                        <p class="text-[10px] text-slate-500">Firebase Firestore Sincronizado</p>
+                    </div>
+                </div>
+                <button onclick="closeCloudModal()" class="text-slate-400 hover:text-slate-600 p-1">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+
+            <div class="p-3 bg-emerald-50 rounded-xl border border-emerald-200 text-xs text-emerald-800 mb-3">
+                <p class="font-bold">✅ Sincronización Automática Activa</p>
+                <p class="text-[11px] mt-0.5 text-emerald-700">Esta versión de prueba ya está conectada al mismo Firebase de Generia.</p>
+            </div>
+
+            <div class="text-right">
+                <button onclick="closeCloudModal()" class="px-4 py-2 bg-slate-900 text-white rounded-lg text-xs font-semibold hover:bg-slate-800 transition">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirmModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[60] hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-sm w-full p-5 shadow-2xl border border-slate-200">
+            <h4 id="confirmTitle" class="text-sm font-bold text-slate-900 mb-1">Confirmar acción</h4>
+            <p id="confirmMessage" class="text-xs text-slate-600 mb-4"></p>
+            <div class="flex items-center justify-end gap-2">
+                <button id="confirmCancelBtn" class="px-3 py-1.5 rounded-lg border border-slate-300 text-slate-700 text-xs font-semibold hover:bg-slate-100 transition">Cancelar</button>
+                <button id="confirmAcceptBtn" class="px-3 py-1.5 rounded-lg bg-rose-600 text-white text-xs font-bold hover:bg-rose-500 transition">Confirmar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Audit Drawer -->
+    <div id="auditDrawer" class="fixed inset-0 z-50 hidden">
+        <div onclick="toggleAuditDrawer(false)" class="absolute inset-0 bg-slate-900/50 backdrop-blur-xs transition-opacity"></div>
+        <div class="absolute inset-y-0 right-0 max-w-md w-full bg-white shadow-2xl flex flex-col z-10">
+            <div class="p-4 bg-slate-900 text-white flex items-center justify-between">
+                <div>
+                    <h3 class="font-bold text-sm">Libro de Entradas y Salidas</h3>
+                    <p class="text-xs text-slate-400">Auditoría cronológica de psicotrópicos</p>
+                </div>
+                <button onclick="toggleAuditDrawer(false)" class="text-slate-400 hover:text-white p-1">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            <div id="auditLogContainer" class="flex-1 overflow-y-auto p-4 space-y-2.5 custom-scrollbar">
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-16 sm:bottom-5 right-5 bg-slate-900 text-white px-4 py-2.5 rounded-xl shadow-xl text-xs font-semibold z-50 flex items-center gap-2 transform transition-all duration-300 translate-y-20 opacity-0 pointer-events-none">
+        <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+        <span id="toastMsg">Mensaje</span>
+    </div>
+
+    <script>
+        const STORAGE_KEY_MEDS = 'generia_stock_meds_v2';
+        const STORAGE_KEY_LABS = 'generia_stock_labs_v2';
+        const STORAGE_KEY_LOGS = 'generia_stock_logs_v2';
+
+        const DEFAULT_FIREBASE_CONFIG = {
+            apiKey: "AIzaSyCmw9QnIDNiofWhs-6QuglxcJHtshYYOQk",
+            authDomain: "stock-generia.firebaseapp.com",
+            projectId: "stock-generia",
+            storageBucket: "stock-generia.firebasestorage.app",
+            messagingSenderId: "211750505731",
+            appId: "1:211750505731:web:e3e28c52d92a01de6c6d36",
+            measurementId: "G-VQ3DPY8C5M"
+        };
+
+        const DEFAULT_LABS = ["Vannier", "Biotenk", "Denver", "Rospaw"];
+        const DEFAULT_MEDS = [
+            { id: "med-1", barcode: "7798024310012", name: "Clonazepam 2mg x 30", drug: "Clonazepam", lab: "Vannier", presentation: "Cajas estuchadas", unit: "Cajas", location: "Estante A - Sector 1", batch: "VN-2024-01", expiry: "2026-11", stock: 45, minStock: 20 },
+            { id: "med-2", barcode: "7798099210045", name: "Alprazolam 1mg (Hospitalario)", drug: "Alprazolam", lab: "Vannier", presentation: "Blisters sueltos", unit: "Blisters", location: "Estante A - Sector 2", batch: "VN-9921", expiry: "2026-08", stock: 120, minStock: 50 },
+            { id: "med-3", barcode: "7798033221199", name: "Diazepam 10mg/2ml Inyectable", drug: "Diazepam", lab: "Biotenk", presentation: "Ampollas", unit: "Ampollas", location: "Estante B - Refrigerado", batch: "BK-7740", expiry: "2027-02", stock: 85, minStock: 30 },
+            { id: "med-4", barcode: "7798011223344", name: "Morfina Clorhidrato 10mg/1ml", drug: "Morfina Clorhidrato", lab: "Denver", presentation: "Ampollas", unit: "Ampollas", location: "Bóveda de Seguridad", batch: "DF-5021", expiry: "2026-12", stock: 12, minStock: 25 },
+            { id: "med-5", barcode: "7798055667788", name: "Fentanilo 0.05mg/ml x 5ml", drug: "Fentanilo Citrato", lab: "Denver", presentation: "Ampollas", unit: "Ampollas", location: "Bóveda de Seguridad", batch: "DF-1144", expiry: "2027-05", stock: 8, minStock: 15 },
+            { id: "med-6", barcode: "7798066554433", name: "Haloperidol 5mg x 60", drug: "Haloperidol", lab: "Rospaw", presentation: "Cajas estuchadas", unit: "Cajas", location: "Estante B - Nivel 3", batch: "RP-3011", expiry: "2026-09", stock: 35, minStock: 15 }
+        ];
+
+        let medications = [];
+        let laboratories = [];
+        let logs = [];
+        let selectedLabFilter = 'ALL';
+
+        let appHtml5QrCode = null;
+        let isAppScannerActive = false;
+        let lastScannedMedId = null;
+        let scanTargetInput = null;
+
+        let db = null;
+        let unsubscribeMeds = null;
+        let unsubscribeLabs = null;
+        let unsubscribeLogs = null;
+
+        window.addEventListener('DOMContentLoaded', () => {
+            loadInitialData();
+            connectFirebase();
+            renderApp();
+        });
+
+        function loadInitialData() {
+            try {
+                const storedLabs = localStorage.getItem(STORAGE_KEY_LABS);
+                laboratories = storedLabs ? JSON.parse(storedLabs) : [...DEFAULT_LABS];
+                const storedMeds = localStorage.getItem(STORAGE_KEY_MEDS);
+                medications = storedMeds ? JSON.parse(storedMeds) : [...DEFAULT_MEDS];
+                const storedLogs = localStorage.getItem(STORAGE_KEY_LOGS);
+                logs = storedLogs ? JSON.parse(storedLogs) : [];
+            } catch (e) {
+                laboratories = [...DEFAULT_LABS];
+                medications = [...DEFAULT_MEDS];
+                logs = [];
+            }
+        }
+
+        function saveMeds() {
+            localStorage.setItem(STORAGE_KEY_MEDS, JSON.stringify(medications));
+            if (db) db.collection('generia_stock').doc('medications').set({ items: medications });
+        }
+
+        function saveLabs() {
+            localStorage.setItem(STORAGE_KEY_LABS, JSON.stringify(laboratories));
+            if (db) db.collection('generia_stock').doc('laboratories').set({ items: laboratories });
+        }
+
+        function saveLogs() {
+            localStorage.setItem(STORAGE_KEY_LOGS, JSON.stringify(logs));
+            if (db) db.collection('generia_stock').doc('logs').set({ items: logs.slice(0, 100) });
+        }
+
+        async function connectFirebase() {
+            try {
+                if (!firebase.apps.length) {
+                    firebase.initializeApp(DEFAULT_FIREBASE_CONFIG);
+                }
+                db = firebase.firestore();
+                setupRealtimeListeners();
+                updateCloudStatus(true);
+            } catch (err) {
+                console.error("Firebase err:", err);
+                updateCloudStatus(false);
+            }
+        }
+
+        function updateCloudStatus(connected) {
+            const badge = document.getElementById('cloudStatusBadge');
+            if (!badge) return;
+            if (connected) {
+                badge.className = "inline-flex items-center gap-1 text-[10px] sm:text-[11px] font-semibold text-emerald-300 bg-emerald-500/20 border border-emerald-500/30 px-2 py-0.5 rounded-full";
+                badge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span><span>Nube Conectada</span>`;
+            } else {
+                badge.className = "inline-flex items-center gap-1 text-[10px] sm:text-[11px] font-medium text-amber-300 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-full";
+                badge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span><span>Memoria Local</span>`;
+            }
+        }
+
+        function setupRealtimeListeners() {
+            if (!db) return;
+            if (unsubscribeMeds) unsubscribeMeds();
+            if (unsubscribeLabs) unsubscribeLabs();
+            if (unsubscribeLogs) unsubscribeLogs();
+
+            unsubscribeMeds = db.collection('generia_stock').doc('medications')
+                .onSnapshot(doc => {
+                    if (doc.exists && doc.data()?.items) {
+                        medications = doc.data().items;
+                        localStorage.setItem(STORAGE_KEY_MEDS, JSON.stringify(medications));
+                        renderApp();
+                    }
+                });
+
+            unsubscribeLabs = db.collection('generia_stock').doc('laboratories')
+                .onSnapshot(doc => {
+                    if (doc.exists && doc.data()?.items) {
+                        laboratories = doc.data().items;
+                        localStorage.setItem(STORAGE_KEY_LABS, JSON.stringify(laboratories));
+                        renderApp();
+                    }
+                });
+
+            unsubscribeLogs = db.collection('generia_stock').doc('logs')
+                .onSnapshot(doc => {
+                    if (doc.exists && doc.data()?.items) {
+                        logs = doc.data().items;
+                        localStorage.setItem(STORAGE_KEY_LOGS, JSON.stringify(logs));
+                        renderAuditLogs();
+                    }
+                });
+        }
+
+        function renderApp() {
+            renderLaboratoriesBar();
+            renderInventory();
+            renderKpis();
+            renderAuditLogs();
+        }
+
+        function renderLaboratoriesBar() {
+            const container = document.getElementById('labPillContainer');
+            if (!container) return;
+
+            const allPill = `
+                <button onclick="setLabFilter('ALL')" class="text-xs px-2.5 py-1 rounded-full font-semibold whitespace-nowrap transition ${selectedLabFilter === 'ALL' ? 'bg-slate-900 text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}">
+                    Todos (${medications.length})
+                </button>
+            `;
+
+            const labPills = laboratories.map(lab => {
+                const count = medications.filter(m => m.lab === lab).length;
+                const isSelected = selectedLabFilter === lab;
+                return `
+                    <button onclick="setLabFilter('${lab}')" class="text-xs px-2.5 py-1 rounded-full font-semibold whitespace-nowrap transition flex items-center gap-1 ${isSelected ? 'bg-emerald-600 text-white shadow-sm' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}">
+                        <span>${lab}</span>
+                        <span class="text-[9px] px-1.5 py-0.2 rounded-full ${isSelected ? 'bg-emerald-700 text-white' : 'bg-slate-200 text-slate-600'}">${count}</span>
+                    </button>
+                `;
+            }).join('');
+
+            container.innerHTML = allPill + labPills;
+        }
+
+        function setLabFilter(lab) {
+            selectedLabFilter = lab;
+            renderApp();
+        }
+
+        function getExpiryStatus(expiryStr) {
+            if (!expiryStr) return { status: 'UNKNOWN', label: 'S/F', color: 'slate' };
+            const parts = expiryStr.split('-');
+            if (parts.length < 2) return { status: 'UNKNOWN', label: expiryStr, color: 'slate' };
+            
+            const expDate = new Date(parseInt(parts[0]), parseInt(parts[1]), 0);
+            const now = new Date();
+            const diffDays = Math.ceil((expDate - now) / (1000 * 60 * 60 * 24));
+            const diffMonths = Math.round(diffDays / 30.4);
+
+            if (diffDays <= 0) {
+                return { status: 'EXPIRED', label: 'VENCIDO', bg: 'bg-rose-100 text-rose-800 border-rose-300' };
+            } else if (diffDays <= 60) {
+                return { status: 'CRITICAL', label: `Vence en ${diffDays}d`, bg: 'bg-rose-100 text-rose-800 border-rose-300 animate-pulse font-bold' };
+            } else if (diffDays <= 180) {
+                return { status: 'SHORT', label: `Vence en ~${diffMonths}m`, bg: 'bg-amber-100 text-amber-800 border-amber-300 font-bold' };
+            } else {
+                return { status: 'HEALTHY', label: `${expiryStr}`, bg: 'bg-slate-100 text-slate-700' };
+            }
+        }
+
+        function renderInventory() {
+            const grid = document.getElementById('inventoryGrid');
+            const empty = document.getElementById('emptyState');
+            const countBadge = document.getElementById('filteredCountBadge');
+
+            const query = (document.getElementById('searchInput')?.value || '').toLowerCase().trim();
+            const presentationFilter = document.getElementById('filterPresentation')?.value || 'ALL';
+            const statusFilter = document.getElementById('filterStatus')?.value || 'ALL';
+
+            const filtered = medications.filter(med => {
+                const matchesSearch = med.name.toLowerCase().includes(query) ||
+                                      med.drug.toLowerCase().includes(query) ||
+                                      (med.barcode && med.barcode.toLowerCase().includes(query)) ||
+                                      (med.batch && med.batch.toLowerCase().includes(query)) ||
+                                      med.location.toLowerCase().includes(query);
+
+                const matchesLab = (selectedLabFilter === 'ALL') || (med.lab === selectedLabFilter);
+                const matchesPres = (presentationFilter === 'ALL') || (med.presentation === presentationFilter);
+                
+                const expInfo = getExpiryStatus(med.expiry);
+                let matchesStatus = true;
+                if (statusFilter === 'LOW') matchesStatus = med.stock <= med.minStock;
+                if (statusFilter === 'EXP_SHORT') matchesStatus = expInfo.status === 'SHORT' || expInfo.status === 'CRITICAL' || expInfo.status === 'EXPIRED';
+                if (statusFilter === 'EXP_CRITICAL') matchesStatus = expInfo.status === 'CRITICAL' || expInfo.status === 'EXPIRED';
+                if (statusFilter === 'OK') matchesStatus = med.stock > med.minStock;
+
+                return matchesSearch && matchesLab && matchesPres && matchesStatus;
+            });
+
+            countBadge.innerText = `${filtered.length} ítems`;
+
+            if (filtered.length === 0) {
+                grid.innerHTML = '';
+                empty.classList.remove('hidden');
+                return;
+            }
+
+            empty.classList.add('hidden');
+
+            grid.innerHTML = filtered.map(med => {
+                const isLow = med.stock <= med.minStock;
+                const isVault = med.location.toLowerCase().includes('bóveda') || med.location.toLowerCase().includes('boveda');
+                const expInfo = getExpiryStatus(med.expiry);
+
+                return `
+                    <div class="bg-white rounded-xl border ${isLow ? 'border-rose-300 shadow-rose-50' : expInfo.status === 'CRITICAL' || expInfo.status === 'EXPIRED' ? 'border-amber-300' : 'border-slate-200'} p-3.5 sm:p-4 shadow-sm flex flex-col justify-between">
+                        
+                        <div>
+                            <div class="flex items-start justify-between gap-1.5 mb-1.5">
+                                <div class="flex flex-wrap items-center gap-1">
+                                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200">${med.lab}</span>
+                                    <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full ${isVault ? 'bg-amber-100 text-amber-800 border border-amber-200 font-bold' : 'bg-slate-100 text-slate-600'}">
+                                        ${isVault ? '🔒 ' : '📍 '}${med.location}
+                                    </span>
+                                </div>
+                                
+                                <div class="flex items-center">
+                                    <button onclick="openEditMedModal('${med.id}')" class="p-1.5 text-slate-400 hover:text-slate-700 rounded-lg">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <h3 class="text-sm font-bold text-slate-900 leading-snug mb-0.5">${med.name}</h3>
+                            <p class="text-xs text-slate-500 mb-2">${med.drug}</p>
+
+                            <div class="grid grid-cols-2 gap-1.5 text-[11px] text-slate-600 bg-slate-50 p-2 rounded-lg mb-2 border border-slate-100">
+                                <div>
+                                    <span class="text-slate-400 block text-[9px]">PRESENTACIÓN</span>
+                                    <span class="font-medium text-slate-800">${med.presentation || 'Cajas'}</span>
+                                </div>
+                                <div>
+                                    <span class="text-slate-400 block text-[9px]">LOTE</span>
+                                    <span class="font-medium text-slate-800">${med.batch || 'S/L'}</span>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center justify-between px-2 py-1.5 rounded-lg border text-xs mb-3 ${expInfo.bg}">
+                                <span class="font-semibold text-[11px]">Vto: ${med.expiry || 'S/F'}</span>
+                                <span class="text-[9px] uppercase tracking-wider font-extrabold">${expInfo.label}</span>
+                            </div>
+
+                            <div class="flex items-baseline justify-between mb-3 px-1">
+                                <div>
+                                    <span class="text-[9px] uppercase font-bold tracking-wider text-slate-400 block">Stock Físico</span>
+                                    <div class="flex items-baseline gap-1">
+                                        <span class="text-2xl font-black ${isLow ? 'text-rose-600' : 'text-slate-900'}">${med.stock}</span>
+                                        <span class="text-xs font-semibold text-slate-500">${med.unit}</span>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <span class="text-[9px] text-slate-400 block">Mínimo</span>
+                                    <span class="text-xs font-bold text-slate-600">${med.minStock} ${med.unit}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Botones Táctiles para Móvil -->
+                        <div class="pt-2 border-t border-slate-100 grid grid-cols-2 gap-2">
+                            <button onclick="openTxModal('${med.id}', 'IN')" class="mobile-touch-btn flex items-center justify-center gap-1.5 py-2 px-3 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold text-xs rounded-xl border border-emerald-200 transition active:scale-95">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                                <span>Ingreso</span>
+                            </button>
+                            <button onclick="openTxModal('${med.id}', 'OUT')" class="mobile-touch-btn flex items-center justify-center gap-1.5 py-2 px-3 bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-xs rounded-xl border border-rose-200 transition active:scale-95">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path></svg>
+                                <span>Egreso</span>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderKpis() {
+            document.getElementById('kpiTotalSkus').innerText = medications.length;
+            const totalUnits = medications.reduce((sum, item) => sum + (parseInt(item.stock) || 0), 0);
+            document.getElementById('kpiTotalUnits').innerText = totalUnits.toLocaleString('es-AR');
+            const criticalCount = medications.filter(item => item.stock <= item.minStock).length;
+            document.getElementById('kpiCriticalCount').innerText = criticalCount;
+            const nearExpiryCount = medications.filter(item => {
+                const exp = getExpiryStatus(item.expiry);
+                return exp.status === 'SHORT' || exp.status === 'CRITICAL' || exp.status === 'EXPIRED';
+            }).length;
+            document.getElementById('kpiExpiryNearCount').innerText = nearExpiryCount;
+        }
+
+        function setExpiryFilterQuick() {
+            const statusFilter = document.getElementById('filterStatus');
+            if (statusFilter) {
+                statusFilter.value = 'EXP_SHORT';
+                renderApp();
+                showToast("Filtrando vencimientos próximos");
+            }
+        }
+
+        function playBeepSound() {
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = "sine";
+                osc.frequency.setValueAtTime(1200, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.12);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.12);
+            } catch (e) {}
+        }
+
+        async function stopAndCleanScanner() {
+            if (appHtml5QrCode) {
+                try {
+                    if (isAppScannerActive) await appHtml5QrCode.stop();
+                    await appHtml5QrCode.clear();
+                } catch (e) {}
+                appHtml5QrCode = null;
+            }
+            const container = document.getElementById('barcodeVideoContainer');
+            if (container) {
+                const videoEl = container.querySelector('video');
+                if (videoEl && videoEl.srcObject) {
+                    try {
+                        videoEl.srcObject.getTracks().forEach(t => t.stop());
+                        videoEl.srcObject = null;
+                    } catch (err) {}
+                }
+                container.innerHTML = '<div id="scannerModalPlaceholder" class="text-center p-4 text-slate-400 text-xs">Iniciando cámara trasera...</div>';
+            }
+            isAppScannerActive = false;
+        }
+
+        async function openScannerModal() {
+            scanTargetInput = null;
+            document.getElementById('scannerMatchedBox').classList.add('hidden');
+            document.getElementById('scannerModal').classList.remove('hidden');
+            await stopAndCleanScanner();
+            initCameraScanner();
+        }
+
+        async function scanBarcodeForForm() {
+            scanTargetInput = 'medBarcode';
+            document.getElementById('scannerMatchedBox').classList.add('hidden');
+            document.getElementById('scannerModal').classList.remove('hidden');
+            await stopAndCleanScanner();
+            initCameraScanner();
+        }
+
+        async function initCameraScanner() {
+            const placeholder = document.getElementById('scannerModalPlaceholder');
+            if (placeholder) placeholder.classList.remove('hidden');
+
+            try {
+                appHtml5QrCode = new Html5Qrcode("barcodeVideoContainer");
+                const config = { 
+                    fps: 15,
+                    qrbox: { width: 240, height: 160 },
+                    aspectRatio: 1.333334,
+                    formatsToSupport: [
+                        Html5QrcodeSupportedFormats.EAN_13,
+                        Html5QrcodeSupportedFormats.EAN_8,
+                        Html5QrcodeSupportedFormats.CODE_128,
+                        Html5QrcodeSupportedFormats.DATA_MATRIX,
+                        Html5QrcodeSupportedFormats.QR_CODE
+                    ]
+                };
+
+                await appHtml5QrCode.start(
+                    { facingMode: "environment" },
+                    config,
+                    handleCameraScanSuccess,
+                    () => {}
+                );
+
+                isAppScannerActive = true;
+                const ph = document.getElementById('scannerModalPlaceholder');
+                if (ph) ph.classList.add('hidden');
+            } catch (err) {
+                const ph = document.getElementById('scannerModalPlaceholder');
+                if (ph) {
+                    ph.classList.remove('hidden');
+                    ph.innerText = "No se pudo acceder a la cámara. Verificá los permisos del navegador.";
+                }
+            }
+        }
+
+        function handleCameraScanSuccess(decodedText) {
+            playBeepSound();
+
+            if (scanTargetInput === 'medBarcode') {
+                const input = document.getElementById('medBarcode');
+                if (input) input.value = decodedText;
+                showToast(`Código capturado: ${decodedText}`);
+                closeScannerModal();
+                return;
+            }
+
+            const matched = medications.find(m => m.barcode === decodedText || (m.batch && m.batch === decodedText));
+            const matchedBox = document.getElementById('scannerMatchedBox');
+            const matchedTitle = document.getElementById('scannerMatchedTitle');
+            const matchedBarcode = document.getElementById('scannerMatchedBarcode');
+
+            if (matched) {
+                lastScannedMedId = matched.id;
+                matchedTitle.innerText = `${matched.name} (${matched.lab})`;
+                matchedBarcode.innerText = `Código: ${decodedText} | Stock: ${matched.stock} ${matched.unit}`;
+                matchedBox.classList.remove('hidden');
+            } else {
+                lastScannedMedId = null;
+                matchedTitle.innerText = "Código no registrado";
+                matchedBarcode.innerText = `Leído: ${decodedText}.`;
+                matchedBox.classList.remove('hidden');
+            }
+
+            if (appHtml5QrCode && isAppScannerActive) {
+                appHtml5QrCode.pause();
+                setTimeout(() => {
+                    if (appHtml5QrCode && isAppScannerActive) appHtml5QrCode.resume();
+                }, 1800);
+            }
+        }
+
+        function scannerTriggerTx(type) {
+            if (!lastScannedMedId) return;
+            const medId = lastScannedMedId;
+            closeScannerModal();
+            openTxModal(medId, type);
+        }
+
+        async function closeScannerModal() {
+            await stopAndCleanScanner();
+            document.getElementById('scannerModal').classList.add('hidden');
+        }
+
+        function openExpiryReportModal() {
+            const nearExpiryMeds = medications.filter(m => {
+                const exp = getExpiryStatus(m.expiry);
+                return exp.status === 'SHORT' || exp.status === 'CRITICAL' || exp.status === 'EXPIRED';
+            });
+
+            const textarea = document.getElementById('salesReportText');
+            if (nearExpiryMeds.length === 0) {
+                textarea.value = `No hay psicotrópicos con vencimiento corto (< 6 meses) en Droguería Generia.`;
+            } else {
+                const today = new Date().toLocaleDateString('es-AR');
+                let text = `📦 *DROGUERÍA GENERIA - REPORTE DE VENCIMIENTO CORTO PARA VENTAS*\n`;
+                text += `📅 Fecha: ${today} | Depósito: Ciudadela\n`;
+                text += `⚠️ *Lotes con prioridad comercial:*\n\n`;
+
+                nearExpiryMeds.forEach((m, idx) => {
+                    const exp = getExpiryStatus(m.expiry);
+                    const tag = exp.status === 'EXPIRED' ? '❌ VENCIDO' : exp.status === 'CRITICAL' ? '🚨 URGENTE' : '⏳ CORTO';
+                    text += `${idx + 1}. *${m.name}* (${m.lab})\n`;
+                    text += `   • Stock: *${m.stock} ${m.unit}*\n`;
+                    text += `   • Lote: ${m.batch || 'S/L'} | Vto: *${m.expiry || 'S/F'}* (${tag})\n\n`;
+                });
+                textarea.value = text;
+            }
+            document.getElementById('expiryReportModal').classList.remove('hidden');
+        }
+
+        function closeExpiryReportModal() {
+            document.getElementById('expiryReportModal').classList.add('hidden');
+        }
+
+        function copySalesReportText() {
+            const textarea = document.getElementById('salesReportText');
+            textarea.select();
+            document.execCommand('copy');
+            showToast("Reporte copiado al portapapeles");
+        }
+
+        function shareReportWhatsApp() {
+            const text = document.getElementById('salesReportText').value;
+            window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+        }
+
+        function populateLabSelects() {
+            const select = document.getElementById('medLab');
+            if (!select) return;
+            const current = select.value;
+            select.innerHTML = laboratories.map(lab => `<option value="${lab}">${lab}</option>`).join('');
+            if (laboratories.includes(current)) select.value = current;
+        }
+
+        function openTxModal(medId, type) {
+            const med = medications.find(m => m.id === medId);
+            if (!med) return;
+
+            document.getElementById('txMedId').value = med.id;
+            document.getElementById('txType').value = type;
+            document.getElementById('txCurrentStock').innerText = `${med.stock} ${med.unit}`;
+            document.getElementById('txUnitLabel').innerText = `${med.presentation} (${med.unit})`;
+            document.getElementById('txModalDrug').innerText = `${med.name} - ${med.drug} (${med.lab})`;
+            document.getElementById('txQuantity').value = '';
+            document.getElementById('txDocRef').value = '';
+            document.getElementById('txNotes').value = '';
+
+            const badge = document.getElementById('txModalBadge');
+            const title = document.getElementById('txModalTitle');
+            const submitBtn = document.getElementById('txSubmitBtn');
+
+            if (type === 'IN') {
+                badge.className = 'text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800';
+                badge.innerText = 'INGRESO / RECEPCIÓN';
+                title.innerText = 'Ingreso de Psicotrópicos';
+                submitBtn.className = 'w-1/2 py-2 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition';
+                submitBtn.innerText = 'Confirmar Ingreso';
+            } else {
+                badge.className = 'text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-rose-100 text-rose-800';
+                badge.innerText = 'EGRESO / DESPACHO';
+                title.innerText = 'Egreso por Pedido';
+                submitBtn.className = 'w-1/2 py-2 px-3 rounded-lg bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold transition';
+                submitBtn.innerText = 'Confirmar Egreso';
+            }
+
+            document.getElementById('txModal').classList.remove('hidden');
+        }
+
+        function closeTxModal() {
+            document.getElementById('txModal').classList.add('hidden');
+        }
+
+        function submitTransaction(e) {
+            e.preventDefault();
+            const medId = document.getElementById('txMedId').value;
+            const type = document.getElementById('txType').value;
+            const qty = parseInt(document.getElementById('txQuantity').value);
+            const docRef = document.getElementById('txDocRef').value.trim();
+            const notes = document.getElementById('txNotes').value.trim();
+
+            const med = medications.find(m => m.id === medId);
+            if (!med) return;
+
+            const prevStock = med.stock;
+            if (type === 'OUT' && qty > med.stock) {
+                showToast(`Stock insuficiente (${med.stock} disponibles)`);
+                return;
+            }
+
+            if (type === 'IN') med.stock += qty;
+            else med.stock -= qty;
+
+            logs.unshift({
+                id: 'log-' + Date.now(),
+                timestamp: new Date().toLocaleString('es-AR'),
+                medName: `${med.name} (${med.lab})`,
+                type: type,
+                qty: qty,
+                unit: med.unit,
+                docRef: docRef,
+                balanceBefore: prevStock,
+                balanceAfter: med.stock,
+                notes: notes || (type === 'IN' ? 'Recepción' : 'Despacho')
+            });
+
+            saveMeds();
+            saveLogs();
+            closeTxModal();
+            renderApp();
+            showToast(`Stock actualizado: ${med.stock} ${med.unit}`);
+        }
+
+        function openNewMedModal() {
+            document.getElementById('medModalTitle').innerText = 'Nuevo Fármaco Psicotrópico';
+            document.getElementById('medFormId').value = '';
+            document.getElementById('medName').value = '';
+            document.getElementById('medDrug').value = '';
+            document.getElementById('medBarcode').value = '';
+            document.getElementById('medLocation').value = 'Estante A';
+            document.getElementById('medBatch').value = '';
+            document.getElementById('medExpiry').value = '';
+            document.getElementById('medStock').value = '0';
+            document.getElementById('medMinStock').value = '10';
+            document.getElementById('medPresentation').value = 'Cajas estuchadas';
+            syncPresentationUnits();
+            document.getElementById('btnDeleteMedInForm').classList.add('hidden');
+            populateLabSelects();
+            document.getElementById('medModal').classList.remove('hidden');
+        }
+
+        function openEditMedModal(medId) {
+            const med = medications.find(m => m.id === medId);
+            if (!med) return;
+
+            populateLabSelects();
+            document.getElementById('medModalTitle').innerText = 'Editar Datos de Fármaco';
+            document.getElementById('medFormId').value = med.id;
+            document.getElementById('medName').value = med.name;
+            document.getElementById('medDrug').value = med.drug;
+            document.getElementById('medLab').value = med.lab;
+            document.getElementById('medBarcode').value = med.barcode || '';
+            document.getElementById('medPresentation').value = med.presentation || 'Cajas estuchadas';
+            document.getElementById('medUnit').value = med.unit || 'Cajas';
+            document.getElementById('medLocation').value = med.location;
+            document.getElementById('medBatch').value = med.batch || '';
+            document.getElementById('medExpiry').value = med.expiry || '';
+            document.getElementById('medStock').value = med.stock;
+            document.getElementById('medMinStock').value = med.minStock;
+
+            document.getElementById('btnDeleteMedInForm').classList.remove('hidden');
+            document.getElementById('medModal').classList.remove('hidden');
+        }
+
+        function closeMedModal() {
+            document.getElementById('medModal').classList.add('hidden');
+        }
+
+        function syncPresentationUnits() {
+            const pres = document.getElementById('medPresentation').value;
+            const unitSelect = document.getElementById('medUnit');
+            if (pres === 'Cajas estuchadas') unitSelect.value = 'Cajas';
+            else if (pres === 'Blisters sueltos') unitSelect.value = 'Blisters';
+            else if (pres === 'Ampollas') unitSelect.value = 'Ampollas';
+        }
+
+        function submitMedication(e) {
+            e.preventDefault();
+            const id = document.getElementById('medFormId').value;
+            const name = document.getElementById('medName').value.trim();
+            const drug = document.getElementById('medDrug').value.trim();
+            const lab = document.getElementById('medLab').value;
+            const barcode = document.getElementById('medBarcode').value.trim();
+            const presentation = document.getElementById('medPresentation').value;
+            const unit = document.getElementById('medUnit').value;
+            const location = document.getElementById('medLocation').value.trim();
+            const batch = document.getElementById('medBatch').value.trim();
+            const expiry = document.getElementById('medExpiry').value;
+            const stock = parseInt(document.getElementById('medStock').value) || 0;
+            const minStock = parseInt(document.getElementById('medMinStock').value) || 0;
+
+            if (id) {
+                const med = medications.find(m => m.id === id);
+                if (med) {
+                    med.name = name;
+                    med.drug = drug;
+                    med.lab = lab;
+                    med.barcode = barcode;
+                    med.presentation = presentation;
+                    med.unit = unit;
+                    med.location = location;
+                    med.batch = batch;
+                    med.expiry = expiry;
+                    med.stock = stock;
+                    med.minStock = minStock;
+                    showToast('Fármaco actualizado');
+                }
+            } else {
+                medications.unshift({
+                    id: 'med-' + Date.now(),
+                    name, drug, lab, barcode, presentation, unit, location, batch, expiry, stock, minStock
+                });
+                showToast('Fármaco creado');
+            }
+
+            saveMeds();
+            closeMedModal();
+            renderApp();
+        }
+
+        function deleteMedFromForm() {
+            const id = document.getElementById('medFormId').value;
+            if (!id) return;
+            medications = medications.filter(m => m.id !== id);
+            saveMeds();
+            closeMedModal();
+            renderApp();
+            showToast('Fármaco eliminado');
+        }
+
+        function openNewLabPrompt() {
+            const name = prompt("Nombre del nuevo laboratorio:");
+            if (!name) return;
+            const clean = name.trim();
+            if (!clean || laboratories.includes(clean)) return;
+            laboratories.push(clean);
+            saveLabs();
+            renderApp();
+            showToast(`Laboratorio "${clean}" agregado`);
+        }
+
+        function openManageLabsModal() {
+            renderManageLabsList();
+            document.getElementById('manageLabsModal').classList.remove('hidden');
+        }
+
+        function closeManageLabsModal() {
+            document.getElementById('manageLabsModal').classList.add('hidden');
+        }
+
+        function addLaboratoryInline() {
+            const input = document.getElementById('newLabInlineInput');
+            const clean = input.value.trim();
+            if (!clean || laboratories.includes(clean)) return;
+            laboratories.push(clean);
+            input.value = '';
+            saveLabs();
+            renderApp();
+            renderManageLabsList();
+        }
+
+        function renderManageLabsList() {
+            const list = document.getElementById('manageLabsList');
+            if (!list) return;
+            list.innerHTML = laboratories.map(lab => `
+                <div class="flex items-center justify-between p-2">
+                    <span class="text-xs font-bold text-slate-800">${lab}</span>
+                    <button onclick="deleteLaboratory('${lab}')" class="p-1 text-slate-400 hover:text-rose-600 rounded">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function deleteLaboratory(lab) {
+            laboratories = laboratories.filter(l => l !== lab);
+            if (selectedLabFilter === lab) selectedLabFilter = 'ALL';
+            saveLabs();
+            renderApp();
+            renderManageLabsList();
+        }
+
+        function openCloudModal() {
+            document.getElementById('cloudModal').classList.remove('hidden');
+        }
+
+        function closeCloudModal() {
+            document.getElementById('cloudModal').classList.add('hidden');
+        }
+
+        function toggleAuditDrawer(show) {
+            const drawer = document.getElementById('auditDrawer');
+            if (show) drawer.classList.remove('hidden');
+            else drawer.classList.add('hidden');
+        }
+
+        function renderAuditLogs() {
+            const container = document.getElementById('auditLogContainer');
+            if (!container) return;
+            if (logs.length === 0) {
+                container.innerHTML = `<p class="text-xs text-slate-400 text-center py-6">No hay registros aún.</p>`;
+                return;
+            }
+            container.innerHTML = logs.map(l => `
+                <div class="p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs space-y-0.5">
+                    <div class="flex items-center justify-between">
+                        <span class="font-bold text-slate-800">${l.medName}</span>
+                        <span class="text-[9px] font-bold px-1.5 py-0.2 rounded-full ${l.type === 'IN' ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}">
+                            ${l.type === 'IN' ? '+ INGRESO' : '- EGRESO'}
+                        </span>
+                    </div>
+                    <div class="flex items-center justify-between text-slate-600 text-[11px]">
+                        <span>Cant: <b>${l.qty} ${l.unit || ''}</b></span>
+                        <span class="text-[10px] text-slate-400">${l.timestamp}</span>
+                    </div>
+                    <div class="text-[10px] text-slate-400">Doc: ${l.docRef} | ${l.notes}</div>
+                </div>
+            `).join('');
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            const msgEl = document.getElementById('toastMsg');
+            msgEl.innerText = msg;
+            toast.classList.remove('translate-y-20', 'opacity-0', 'pointer-events-none');
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0', 'pointer-events-none');
+            }, 2500);
+        }
+    </script>
+</body>
+</html>
