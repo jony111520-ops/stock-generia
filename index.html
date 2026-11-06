@@ -6,12 +6,23 @@
     <title>Droguería Generia - Control de Psicotrópicos</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Firebase App & Firestore SDKs (Compat v9) -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <!-- Camera barcode scanner library -->
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
     <style>
         body { font-family: 'Inter', sans-serif; }
         .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        #barcodeVideoContainer video {
+            border-radius: 0.75rem;
+            object-fit: cover;
+            width: 100% !important;
+            height: auto !important;
+        }
     </style>
 </head>
 <body class="bg-slate-100 text-slate-800 antialiased min-h-screen flex flex-col">
@@ -29,7 +40,7 @@
                     <div class="flex items-center gap-2">
                         <h1 class="font-bold text-lg leading-tight tracking-tight">Droguería Generia</h1>
                         <span class="text-xs bg-emerald-500/20 text-emerald-300 font-semibold px-2 py-0.5 rounded-full border border-emerald-500/30">Ciudadela</span>
-                        <span class="text-[10px] bg-indigo-500/20 text-indigo-300 font-bold px-2 py-0.5 rounded-full border border-indigo-500/30">v3.0 Nube</span>
+                        <span class="text-[10px] bg-indigo-500/20 text-indigo-300 font-bold px-2 py-0.5 rounded-full border border-indigo-500/30">v4.0 Escáner & Ventas</span>
                     </div>
                     <div class="flex items-center gap-2 mt-0.5">
                         <p class="text-xs text-slate-400">Sector Psicotrópicos & Estupefacientes</p>
@@ -43,9 +54,18 @@
 
             <!-- Action Buttons in Nav -->
             <div class="flex items-center gap-2 flex-wrap">
+                <!-- Barcode Scanner Quick Button -->
+                <button onclick="openScannerModal()" class="flex items-center gap-1.5 px-3 py-2 bg-sky-600 hover:bg-sky-500 text-white rounded-lg text-xs font-bold shadow-sm transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path></svg>
+                    <span>Escanear Código</span>
+                </button>
+                <button onclick="openExpiryReportModal()" class="flex items-center gap-1.5 px-3 py-2 bg-amber-600 hover:bg-amber-500 text-white rounded-lg text-xs font-bold shadow-sm transition" title="Reporte comercial de vencimientos">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                    <span>Vencimientos (Ventas)</span>
+                </button>
                 <button onclick="openCloudModal()" class="flex items-center gap-1.5 px-3 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold shadow-sm transition">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 00-9.78 2.096A4.001 4.001 0 003 15z"></path></svg>
-                    <span>Conectar Nube</span>
+                    <span>Nube</span>
                 </button>
                 <button onclick="openNewMedModal()" class="flex items-center gap-2 px-3 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-semibold shadow-sm transition">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
@@ -57,7 +77,7 @@
                 </button>
                 <button onclick="exportToCSV()" class="flex items-center gap-2 px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-xs font-semibold border border-slate-700 transition" title="Descargar planilla Excel/CSV">
                     <svg class="w-4 h-4 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                    <span>Exportar CSV</span>
+                    <span>CSV</span>
                 </button>
                 <button onclick="resetAllDataConfirm()" class="p-2 text-slate-400 hover:text-rose-400 hover:bg-slate-800 rounded-lg transition" title="Reiniciar datos de fábrica">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
@@ -83,9 +103,16 @@
                 <span class="text-xs font-semibold text-rose-700 uppercase tracking-wider block">Bajo Punto Reposición</span>
                 <span id="kpiCriticalCount" class="text-2xl font-bold text-rose-700 mt-1 block">0</span>
             </div>
-            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-                <span class="text-xs font-medium text-slate-500 uppercase tracking-wider block">Movimientos Hoy</span>
-                <span id="kpiTodayTrans" class="text-2xl font-bold text-emerald-600 mt-1 block">0</span>
+            <!-- Expiration KPI Alert for Sales -->
+            <div onclick="setExpiryFilterQuick()" class="bg-white p-4 rounded-xl border border-amber-200 bg-amber-50/40 shadow-sm cursor-pointer hover:bg-amber-100/50 transition" title="Clic para filtrar por vencimiento próximo">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-semibold text-amber-800 uppercase tracking-wider block">Vto. Corto (&lt; 6 meses)</span>
+                    <span class="text-[10px] bg-amber-200 text-amber-900 font-bold px-1.5 py-0.5 rounded">Ventas</span>
+                </div>
+                <span id="kpiExpiryNearCount" class="text-2xl font-bold text-amber-700 mt-1 block">0</span>
+            </div>
+            <div class="hidden sm:hidden">
+                <span id="kpiTodayTrans">0</span>
             </div>
         </div>
 
@@ -94,9 +121,12 @@
             
             <!-- Search bar & presentation selector -->
             <div class="grid grid-cols-1 md:grid-cols-12 gap-3">
-                <div class="md:col-span-6 relative">
+                <div class="md:col-span-5 relative">
                     <svg class="w-4 h-4 absolute left-3.5 top-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                    <input type="text" id="searchInput" oninput="renderApp()" placeholder="Buscar por fármaco, droga, lote, o estante..." class="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                    <input type="text" id="searchInput" oninput="renderApp()" placeholder="Buscar por fármaco, droga, lote, código de barras o estante..." class="w-full pl-10 pr-10 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                    <button onclick="openScannerModal()" class="absolute right-2 top-2 p-1 text-slate-400 hover:text-sky-600 rounded" title="Escanear con cámara">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path></svg>
+                    </button>
                 </div>
 
                 <div class="md:col-span-3">
@@ -108,10 +138,12 @@
                     </select>
                 </div>
 
-                <div class="md:col-span-3">
+                <div class="md:col-span-4">
                     <select id="filterStatus" onchange="renderApp()" class="w-full py-2 px-3 border border-slate-300 rounded-lg text-sm bg-white text-slate-700 focus:ring-2 focus:ring-emerald-500 focus:outline-none">
                         <option value="ALL">🟢 Todos los Estados</option>
                         <option value="LOW">⚠️ Stock Crítico / Reponer</option>
+                        <option value="EXP_SHORT">⏳ Vencimiento Corto (&lt; 6 meses)</option>
+                        <option value="EXP_CRITICAL">🚨 Vto. Urgente (&lt; 60 días o vencido)</option>
                         <option value="OK">✔️ Stock Óptimo</option>
                     </select>
                 </div>
@@ -164,6 +196,95 @@
             </div>
         </div>
     </main>
+
+    <!-- Modal: Barcode Camera Scanner -->
+    <div id="scannerModal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-5 shadow-2xl border border-slate-200">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-3">
+                <div class="flex items-center gap-2">
+                    <div class="p-2 bg-sky-100 text-sky-700 rounded-lg">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path></svg>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-bold text-slate-900">Escáner de Barras</h3>
+                        <p class="text-[11px] text-slate-500">Cámara trasera para lectura rápida</p>
+                    </div>
+                </div>
+                <button onclick="closeScannerModal()" class="text-slate-400 hover:text-slate-600 p-1">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+
+            <!-- Video Container -->
+            <div id="barcodeVideoContainer" class="w-full bg-slate-950 rounded-xl overflow-hidden min-h-[220px] flex items-center justify-center border border-slate-800 relative">
+                <div id="scannerModalPlaceholder" class="text-center p-4 text-slate-400 text-xs">
+                    Iniciando cámara trasera...
+                </div>
+            </div>
+
+            <!-- Scan result badge -->
+            <div id="scannerMatchedBox" class="mt-3 p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs hidden">
+                <span class="text-[10px] uppercase font-bold text-slate-400 block">Producto Detectado:</span>
+                <p id="scannerMatchedTitle" class="font-bold text-slate-900 text-sm mt-0.5"></p>
+                <p id="scannerMatchedBarcode" class="font-mono text-emerald-600 text-[11px] mt-0.5"></p>
+                
+                <div class="grid grid-cols-2 gap-2 mt-3 pt-2 border-t border-slate-200">
+                    <button onclick="scannerTriggerTx('IN')" class="py-1.5 px-2 bg-emerald-600 text-white rounded-lg font-bold text-xs hover:bg-emerald-500 transition">
+                        + Ingreso
+                    </button>
+                    <button onclick="scannerTriggerTx('OUT')" class="py-1.5 px-2 bg-rose-600 text-white rounded-lg font-bold text-xs hover:bg-rose-500 transition">
+                        - Egreso
+                    </button>
+                </div>
+            </div>
+
+            <div class="mt-4 flex justify-between items-center text-xs">
+                <span class="text-slate-400 text-[11px]">Lee EAN-13, Datamatrix y QR</span>
+                <button onclick="closeScannerModal()" class="px-4 py-2 border border-slate-300 text-slate-700 font-semibold rounded-lg hover:bg-slate-100 transition">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Sales Expiration Report (WhatsApp / Copy) -->
+    <div id="expiryReportModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-3">
+                <div class="flex items-center gap-2">
+                    <div class="p-2 bg-amber-100 text-amber-700 rounded-lg">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-bold text-slate-900">Vencimientos Próximos (Para Ventas)</h3>
+                        <p class="text-[11px] text-slate-500">Lotes a liquidar antes de su caducidad</p>
+                    </div>
+                </div>
+                <button onclick="closeExpiryReportModal()" class="text-slate-400 hover:text-slate-600 p-1">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+
+            <p class="text-xs text-slate-600 mb-3">
+                Copiá este resumen o mandalo directamente por WhatsApp a los vendedores para que ofrezcan estos lotes prioritarios con descuento a farmacias y sanatorios:
+            </p>
+
+            <textarea id="salesReportText" rows="8" readonly class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-mono text-xs text-slate-800 focus:outline-none mb-4 select-all"></textarea>
+
+            <div class="flex items-center justify-between gap-2 border-t border-slate-100 pt-3">
+                <button onclick="shareReportWhatsApp()" class="flex items-center gap-1.5 px-3 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold transition">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
+                    <span>Enviar a Ventas (WhatsApp)</span>
+                </button>
+                <div class="flex items-center gap-2">
+                    <button onclick="copySalesReportText()" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-lg text-xs transition">
+                        Copiar Texto
+                    </button>
+                    <button onclick="closeExpiryReportModal()" class="px-3 py-2 border border-slate-300 text-slate-700 font-semibold rounded-lg text-xs hover:bg-slate-50 transition">
+                        Cerrar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Modal: Stock Entry / Exit Transaction -->
     <div id="txModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
@@ -274,6 +395,21 @@
                         <input type="text" id="medLocation" required placeholder="Ej: Bóveda de Seguridad / Estante A" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
                     </div>
 
+                    <!-- Barcode field inside Medication Form -->
+                    <div class="sm:col-span-2">
+                        <div class="flex items-center justify-between mb-1">
+                            <label class="font-bold text-slate-700">Código de Barras (EAN / Datamatrix)</label>
+                            <span class="text-[10px] text-slate-400">Opcional para lectura por cámara</span>
+                        </div>
+                        <div class="flex gap-2">
+                            <input type="text" id="medBarcode" placeholder="Ej: 7798024310012" class="flex-1 px-3 py-2 border border-slate-300 rounded-lg text-sm font-mono focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                            <button type="button" onclick="scanBarcodeForForm()" class="px-3 py-2 bg-slate-800 text-white rounded-lg text-xs font-bold hover:bg-slate-700 transition flex items-center gap-1">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path></svg>
+                                <span>Capturar</span>
+                            </button>
+                        </div>
+                    </div>
+
                     <div>
                         <label class="block font-bold text-slate-700 mb-1">N° de Lote</label>
                         <input type="text" id="medBatch" placeholder="Ej: L-4890" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
@@ -337,10 +473,10 @@
             </div>
 
             <div class="mt-4 text-right">
-            <button onclick="closeManageLabsModal()" class="px-4 py-2 bg-slate-900 text-white rounded-lg text-xs font-semibold hover:bg-slate-800 transition">Cerrar</button>
+                <button onclick="closeManageLabsModal()" class="px-4 py-2 bg-slate-900 text-white rounded-lg text-xs font-semibold hover:bg-slate-800 transition">Cerrar</button>
+            </div>
         </div>
     </div>
-</div>
 
     <!-- Modal: Cloud Sync Configuration -->
     <div id="cloudModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
@@ -466,10 +602,11 @@
         // Default initial laboratories
         const DEFAULT_LABS = ["Vannier", "Biotenk", "Denver", "Rospaw"];
 
-        // Initial realistic inventory
+        // Initial realistic inventory with barcodes
         const DEFAULT_MEDS = [
             {
                 id: "med-1",
+                barcode: "7798024310012",
                 name: "Clonazepam 2mg x 30",
                 drug: "Clonazepam",
                 lab: "Vannier",
@@ -483,6 +620,7 @@
             },
             {
                 id: "med-2",
+                barcode: "7798099210045",
                 name: "Alprazolam 1mg (Hospitalario)",
                 drug: "Alprazolam",
                 lab: "Vannier",
@@ -496,6 +634,7 @@
             },
             {
                 id: "med-3",
+                barcode: "7798033221199",
                 name: "Diazepam 10mg/2ml Inyectable",
                 drug: "Diazepam",
                 lab: "Biotenk",
@@ -509,6 +648,7 @@
             },
             {
                 id: "med-4",
+                barcode: "7798011223344",
                 name: "Morfina Clorhidrato 10mg/1ml",
                 drug: "Morfina Clorhidrato",
                 lab: "Denver",
@@ -522,6 +662,7 @@
             },
             {
                 id: "med-5",
+                barcode: "7798055667788",
                 name: "Fentanilo 0.05mg/ml x 5ml",
                 drug: "Fentanilo Citrato",
                 lab: "Denver",
@@ -535,6 +676,7 @@
             },
             {
                 id: "med-6",
+                barcode: "7798066554433",
                 name: "Haloperidol 5mg x 60",
                 drug: "Haloperidol",
                 lab: "Rospaw",
@@ -553,6 +695,12 @@
         let laboratories = [];
         let logs = [];
         let selectedLabFilter = 'ALL';
+
+        // Camera Scanner variables
+        let appHtml5QrCode = null;
+        let isAppScannerActive = false;
+        let lastScannedMedId = null;
+        let scanTargetInput = null;
 
         // Cloud sync variables
         let isCloudActive = false;
@@ -650,138 +798,121 @@
             if (errBox) errBox.classList.add('hidden');
 
             try {
-                // Dynamically import Firebase v11 modular SDKs
-                const { initializeApp, getApps } = await import("https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js");
-                const { getFirestore, doc, setDoc, onSnapshot } = await import("https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js");
-
-                let app;
-                const activeApps = getApps();
-                if (activeApps.length > 0) {
-                    app = activeApps[0];
-                } else {
-                    app = initializeApp(config);
+                if (!window.firebase) {
+                    console.warn("Firebase SDK no cargado.");
+                    updateCloudStatus(false);
+                    return;
                 }
-                
-                db = getFirestore(app);
 
-                // Listen to Realtime updates on Medications
-                const medsRef = doc(db, "stock_generia", "medications");
-                unsubscribeMeds = onSnapshot(medsRef, (docSnap) => {
-                    if (docSnap.exists()) {
-                        const data = docSnap.data();
-                        if (data && Array.isArray(data.items)) {
-                            medications = data.items;
-                            localStorage.setItem(STORAGE_KEY_MEDS, JSON.stringify(medications));
-                            renderApp();
-                        }
-                    } else {
-                        // First time: upload current local data
-                        syncMedsToCloud();
-                    }
-                }, (error) => {
-                    console.error("Error escuchando fármacos:", error);
-                    handleConnectionError(error);
-                });
+                if (!firebase.apps.length) {
+                    firebase.initializeApp(config);
+                }
 
-                // Listen to Realtime updates on Laboratories
-                const labsRef = doc(db, "stock_generia", "laboratories");
-                unsubscribeLabs = onSnapshot(labsRef, (docSnap) => {
-                    if (docSnap.exists()) {
-                        const data = docSnap.data();
-                        if (data && Array.isArray(data.items)) {
-                            laboratories = data.items;
-                            localStorage.setItem(STORAGE_KEY_LABS, JSON.stringify(laboratories));
-                            renderApp();
-                        }
-                    } else {
-                        syncLabsToCloud();
-                    }
-                }, (error) => console.error("Error escuchando laboratorios:", error));
-
-                // Listen to Realtime updates on Logs
-                const logsRef = doc(db, "stock_generia", "logs");
-                unsubscribeLogs = onSnapshot(logsRef, (docSnap) => {
-                    if (docSnap.exists()) {
-                        const data = docSnap.data();
-                        if (data && Array.isArray(data.items)) {
-                            logs = data.items;
-                            localStorage.setItem(STORAGE_KEY_LOGS, JSON.stringify(logs));
-                            renderApp();
-                        }
-                    } else {
-                        syncLogsToCloud();
-                    }
-                }, (error) => console.error("Error escuchando actas:", error));
-
-                isCloudActive = true;
+                db = firebase.firestore();
+                setupRealtimeListeners();
                 updateCloudStatus(true);
-                showToast("¡Conectado a la nube de Stock-Generia! En vivo.");
-
             } catch (err) {
-                console.error("Fallo al conectar con Firebase:", err);
-                handleConnectionError(err);
+                console.error("Error al conectar Firebase:", err);
+                if (errBox) {
+                    errBox.innerText = `Error: ${err.message || err}`;
+                    errBox.classList.remove('hidden');
+                }
+                updateCloudStatus(false);
             }
         }
 
-        function handleConnectionError(err) {
-            updateCloudStatus(false);
-            const errBox = document.getElementById('cloudErrorDetails');
-            if (errBox) {
-                errBox.classList.remove('hidden');
-                errBox.innerText = `Detalle del error: ${err.message || err}`;
-            }
-            showToast("No se pudo conectar a Firebase. Verifique las claves.");
-        }
-
-        async function syncMedsToCloud() {
-            if (!isCloudActive || !db) return;
-            try {
-                const { doc, setDoc } = await import("https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js");
-                await setDoc(doc(db, "stock_generia", "medications"), { items: medications, updatedAt: new Date().toISOString() });
-            } catch (e) {
-                console.error("Error subiendo stock a la nube:", e);
-            }
-        }
-
-        async function syncLabsToCloud() {
-            if (!isCloudActive || !db) return;
-            try {
-                const { doc, setDoc } = await import("https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js");
-                await setDoc(doc(db, "stock_generia", "laboratories"), { items: laboratories, updatedAt: new Date().toISOString() });
-            } catch (e) {
-                console.error("Error subiendo laboratorios a la nube:", e);
-            }
-        }
-
-        async function syncLogsToCloud() {
-            if (!isCloudActive || !db) return;
-            try {
-                const { doc, setDoc } = await import("https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js");
-                await setDoc(doc(db, "stock_generia", "logs"), { items: logs, updatedAt: new Date().toISOString() });
-            } catch (e) {
-                console.error("Error subiendo libro de actas:", e);
-            }
-        }
-
-        function updateCloudStatus(online) {
+        function updateCloudStatus(connected) {
+            isCloudActive = connected;
             const badge = document.getElementById('cloudStatusBadge');
             const disconnectBtn = document.getElementById('btnDisconnectCloud');
+
             if (!badge) return;
 
-            if (online) {
-                badge.className = "inline-flex items-center gap-1.5 text-[11px] font-semibold text-emerald-300 bg-emerald-500/10 border border-emerald-500/30 px-2 py-0.5 rounded-full";
+            if (connected) {
+                badge.className = "inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-300 bg-emerald-500/20 border border-emerald-500/30 px-2 py-0.5 rounded-full";
                 badge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span><span>Nube Conectada (En vivo)</span>`;
                 if (disconnectBtn) disconnectBtn.classList.remove('hidden');
             } else {
                 badge.className = "inline-flex items-center gap-1 text-[11px] font-medium text-amber-300 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-full";
-                badge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span><span>Memoria Local</span>`;
+                badge.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span><span>Memoria Local</span>`;
                 if (disconnectBtn) disconnectBtn.classList.add('hidden');
             }
         }
 
+        function setupRealtimeListeners() {
+            if (!db) return;
+
+            if (unsubscribeMeds) unsubscribeMeds();
+            if (unsubscribeLabs) unsubscribeLabs();
+            if (unsubscribeLogs) unsubscribeLogs();
+
+            // Real-time synchronization of medications
+            unsubscribeMeds = db.collection('generia_stock').doc('medications')
+                .onSnapshot(doc => {
+                    if (doc.exists && doc.data()?.items) {
+                        medications = doc.data().items;
+                        localStorage.setItem(STORAGE_KEY_MEDS, JSON.stringify(medications));
+                        renderApp();
+                    } else {
+                        syncMedsToCloud();
+                    }
+                }, err => console.error("Error escuchando fármacos:", err));
+
+            // Real-time synchronization of laboratories
+            unsubscribeLabs = db.collection('generia_stock').doc('laboratories')
+                .onSnapshot(doc => {
+                    if (doc.exists && doc.data()?.items) {
+                        laboratories = doc.data().items;
+                        localStorage.setItem(STORAGE_KEY_LABS, JSON.stringify(laboratories));
+                        renderApp();
+                    } else {
+                        syncLabsToCloud();
+                    }
+                }, err => console.error("Error escuchando laboratorios:", err));
+
+            // Real-time synchronization of logs
+            unsubscribeLogs = db.collection('generia_stock').doc('logs')
+                .onSnapshot(doc => {
+                    if (doc.exists && doc.data()?.items) {
+                        logs = doc.data().items;
+                        localStorage.setItem(STORAGE_KEY_LOGS, JSON.stringify(logs));
+                        renderAuditLogs();
+                    } else {
+                        syncLogsToCloud();
+                    }
+                }, err => console.error("Error escuchando logs:", err));
+        }
+
+        async function syncMedsToCloud() {
+            if (!db) return;
+            try {
+                await db.collection('generia_stock').doc('medications').set({ items: medications });
+            } catch (e) {
+                console.error("Error al sincronizar fármacos en la nube:", e);
+            }
+        }
+
+        async function syncLabsToCloud() {
+            if (!db) return;
+            try {
+                await db.collection('generia_stock').doc('laboratories').set({ items: laboratories });
+            } catch (e) {
+                console.error("Error al sincronizar laboratorios en la nube:", e);
+            }
+        }
+
+        async function syncLogsToCloud() {
+            if (!db) return;
+            try {
+                await db.collection('generia_stock').doc('logs').set({ items: logs.slice(0, 100) });
+            } catch (e) {
+                console.error("Error al sincronizar auditoría en la nube:", e);
+            }
+        }
+
         function openCloudModal() {
-            const currentCfg = localStorage.getItem(STORAGE_KEY_FIREBASE) || '';
-            document.getElementById('firebaseConfigInput').value = currentCfg;
+            const rawCfg = localStorage.getItem(STORAGE_KEY_FIREBASE);
+            document.getElementById('firebaseConfigInput').value = rawCfg || JSON.stringify(DEFAULT_FIREBASE_CONFIG, null, 2);
             document.getElementById('cloudModal').classList.remove('hidden');
         }
 
@@ -789,52 +920,16 @@
             document.getElementById('cloudModal').classList.add('hidden');
         }
 
-        function saveCloudConfig() {
-            let input = document.getElementById('firebaseConfigInput').value.trim();
-            if (!input) {
-                showToast("Por favor ingresá la configuración");
-                return;
-            }
-
+        async function saveCloudConfig() {
+            const inputVal = document.getElementById('firebaseConfigInput').value.trim();
             try {
-                let parsed = null;
-
-                // 1. If it has const firebaseConfig = { ... }
-                if (input.includes('{') && input.includes('}')) {
-                    const startIdx = input.indexOf('{');
-                    const endIdx = input.lastIndexOf('}');
-                    const objStr = input.substring(startIdx, endIdx + 1);
-
-                    try {
-                        // First attempt standard JSON parse
-                        parsed = JSON.parse(objStr);
-                    } catch (e) {
-                        // If keys are not double-quoted, convert JavaScript object notation to valid JSON
-                        const jsonStr = objStr
-                            .replace(/([a-zA-Z0-9_]+)\s*:/g, '"$1":')
-                            .replace(/'/g, '"')
-                            .replace(/,\s*}/g, '}');
-                        parsed = JSON.parse(jsonStr);
-                    }
-                }
-
-                if (!parsed || !parsed.apiKey || !parsed.projectId) {
-                    showToast("Formato inválido. No se encontró apiKey o projectId.");
-                    return;
-                }
-
-                localStorage.setItem(STORAGE_KEY_FIREBASE, JSON.stringify(parsed));
+                const config = JSON.parse(inputVal);
+                localStorage.setItem(STORAGE_KEY_FIREBASE, JSON.stringify(config));
+                await connectFirebase(config);
                 closeCloudModal();
-                connectFirebase(parsed);
-
-            } catch (err) {
-                console.error("Error parseando Firebase config:", err);
-                const errBox = document.getElementById('cloudErrorDetails');
-                if (errBox) {
-                    errBox.classList.remove('hidden');
-                    errBox.innerText = `Error al leer el texto pegado: asegurate de copiar desde { hasta }.`;
-                }
-                showToast("Error de formato al leer las credenciales.");
+                showToast("Conexión en la nube establecida con éxito");
+            } catch (e) {
+                alert("Formato JSON inválido. Verifique las comillas y llaves.");
             }
         }
 
@@ -842,55 +937,77 @@
             if (unsubscribeMeds) unsubscribeMeds();
             if (unsubscribeLabs) unsubscribeLabs();
             if (unsubscribeLogs) unsubscribeLogs();
-            localStorage.removeItem(STORAGE_KEY_FIREBASE);
-            isCloudActive = false;
             db = null;
-            auth = null;
+            localStorage.removeItem(STORAGE_KEY_FIREBASE);
             updateCloudStatus(false);
             closeCloudModal();
-            showToast("Nube desconectada. Operando en modo local.");
+            showToast("Desconectado de la nube");
         }
 
-        // Render application components
+        // Master UI Render Function
         function renderApp() {
-            renderLabPills();
+            renderLaboratoriesBar();
             renderInventory();
             renderKpis();
             renderAuditLogs();
-            populateLabSelects();
         }
 
-        // Render Laboratory Pills
-        function renderLabPills() {
+        // Render laboratory filter pill buttons
+        function renderLaboratoriesBar() {
             const container = document.getElementById('labPillContainer');
             if (!container) return;
 
-            let html = `
-                <button onclick="setLabFilter('ALL')" class="px-3 py-1 rounded-full text-xs font-semibold transition ${selectedLabFilter === 'ALL' ? 'bg-slate-900 text-white shadow-sm' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}">
-                    Todos (${laboratories.length})
+            const allPill = `
+                <button onclick="setLabFilter('ALL')" class="text-xs px-3 py-1 rounded-full font-semibold transition ${selectedLabFilter === 'ALL' ? 'bg-slate-900 text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}">
+                    Todos (${medications.length})
                 </button>
             `;
 
-            laboratories.forEach(lab => {
+            const labPills = laboratories.map(lab => {
+                const count = medications.filter(m => m.lab === lab).length;
                 const isSelected = selectedLabFilter === lab;
-                html += `
-                    <div class="inline-flex items-center rounded-full text-xs font-semibold transition ${isSelected ? 'bg-emerald-600 text-white shadow-sm' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}">
-                        <button onclick="setLabFilter('${lab}')" class="px-3 py-1">
-                            ${lab}
-                        </button>
-                        <button onclick="confirmDeleteLabDirect('${lab}')" class="pr-2 pl-0.5 py-1 text-slate-400 hover:text-rose-500 font-bold" title="Eliminar laboratorio">
-                            &times;
-                        </button>
-                    </div>
+                return `
+                    <button onclick="setLabFilter('${lab}')" class="text-xs px-3 py-1 rounded-full font-semibold transition flex items-center gap-1.5 ${isSelected ? 'bg-emerald-600 text-white shadow-sm' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}">
+                        <span>${lab}</span>
+                        <span class="text-[10px] px-1.5 py-0.2 rounded-full ${isSelected ? 'bg-emerald-700 text-white' : 'bg-slate-200 text-slate-600'}">${count}</span>
+                    </button>
                 `;
-            });
+            }).join('');
 
-            container.innerHTML = html;
+            container.innerHTML = allPill + labPills;
         }
 
         function setLabFilter(lab) {
             selectedLabFilter = lab;
             renderApp();
+        }
+
+        // Helper: Calculate expiration health status
+        function getExpiryStatus(expiryStr) {
+            if (!expiryStr) return { status: 'UNKNOWN', label: 'S/F', color: 'slate', months: 999 };
+            
+            // Format YYYY-MM
+            const parts = expiryStr.split('-');
+            if (parts.length < 2) return { status: 'UNKNOWN', label: expiryStr, color: 'slate', months: 999 };
+            
+            const expYear = parseInt(parts[0]);
+            const expMonth = parseInt(parts[1]) - 1; // 0-indexed
+            const expDate = new Date(expYear, expMonth + 1, 0); // last day of month
+            
+            const now = new Date();
+            const diffTime = expDate - now;
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            const diffMonths = Math.round(diffDays / 30.4);
+
+            if (diffDays <= 0) {
+                return { status: 'EXPIRED', label: 'VENCIDO', color: 'rose', bg: 'bg-rose-100 text-rose-800 border-rose-300', days: diffDays, months: diffMonths };
+            } else if (diffDays <= 60) {
+                return { status: 'CRITICAL', label: `Vence en ${diffDays}d`, color: 'rose', bg: 'bg-rose-100 text-rose-800 border-rose-300 animate-pulse font-bold', days: diffDays, months: diffMonths };
+            } else if (diffDays <= 180) {
+                return { status: 'SHORT', label: `Vence en ~${diffMonths}m`, color: 'amber', bg: 'bg-amber-100 text-amber-800 border-amber-300 font-bold', days: diffDays, months: diffMonths };
+            } else {
+                return { status: 'HEALTHY', label: `${expiryStr}`, color: 'emerald', bg: 'bg-slate-100 text-slate-700', days: diffDays, months: diffMonths };
+            }
         }
 
         // Render Inventory Cards
@@ -906,14 +1023,18 @@
             const filtered = medications.filter(med => {
                 const matchesSearch = med.name.toLowerCase().includes(query) ||
                                       med.drug.toLowerCase().includes(query) ||
+                                      (med.barcode && med.barcode.toLowerCase().includes(query)) ||
                                       (med.batch && med.batch.toLowerCase().includes(query)) ||
                                       med.location.toLowerCase().includes(query);
 
                 const matchesLab = (selectedLabFilter === 'ALL') || (med.lab === selectedLabFilter);
                 const matchesPres = (presentationFilter === 'ALL') || (med.presentation === presentationFilter);
                 
+                const expInfo = getExpiryStatus(med.expiry);
                 let matchesStatus = true;
                 if (statusFilter === 'LOW') matchesStatus = med.stock <= med.minStock;
+                if (statusFilter === 'EXP_SHORT') matchesStatus = expInfo.status === 'SHORT' || expInfo.status === 'CRITICAL' || expInfo.status === 'EXPIRED';
+                if (statusFilter === 'EXP_CRITICAL') matchesStatus = expInfo.status === 'CRITICAL' || expInfo.status === 'EXPIRED';
                 if (statusFilter === 'OK') matchesStatus = med.stock > med.minStock;
 
                 return matchesSearch && matchesLab && matchesPres && matchesStatus;
@@ -932,9 +1053,10 @@
             grid.innerHTML = filtered.map(med => {
                 const isLow = med.stock <= med.minStock;
                 const isVault = med.location.toLowerCase().includes('bóveda') || med.location.toLowerCase().includes('boveda');
+                const expInfo = getExpiryStatus(med.expiry);
 
                 return `
-                    <div class="bg-white rounded-xl border ${isLow ? 'border-rose-300 shadow-rose-100' : 'border-slate-200'} p-4 shadow-sm hover:shadow-md transition flex flex-col justify-between relative group">
+                    <div class="bg-white rounded-xl border ${isLow ? 'border-rose-300 shadow-rose-50' : expInfo.status === 'CRITICAL' || expInfo.status === 'EXPIRED' ? 'border-amber-300' : 'border-slate-200'} p-4 shadow-sm hover:shadow-md transition flex flex-col justify-between relative group">
                         
                         <div>
                             <!-- Header / Badges -->
@@ -960,17 +1082,33 @@
                             <h3 class="text-sm font-bold text-slate-900 leading-tight mb-0.5">${med.name}</h3>
                             <p class="text-xs text-slate-500 mb-2 font-medium">${med.drug}</p>
 
-                            <!-- Presentation and Batch -->
-                            <div class="grid grid-cols-2 gap-2 text-[11px] text-slate-600 bg-slate-50 p-2 rounded-lg mb-3 border border-slate-100">
+                            <!-- Presentation, Batch and Expiry with Warning Badge -->
+                            <div class="grid grid-cols-2 gap-2 text-[11px] text-slate-600 bg-slate-50 p-2 rounded-lg mb-2 border border-slate-100">
                                 <div>
                                     <span class="text-slate-400 block text-[10px]">PRESENTACIÓN</span>
                                     <span class="font-medium text-slate-800">${med.presentation || 'Cajas estuchadas'}</span>
                                 </div>
                                 <div>
-                                    <span class="text-slate-400 block text-[10px]">LOTE / VTO</span>
-                                    <span class="font-medium text-slate-800">${med.batch || 'S/L'} (${med.expiry || 'S/F'})</span>
+                                    <span class="text-slate-400 block text-[10px]">LOTE</span>
+                                    <span class="font-medium text-slate-800">${med.batch || 'S/L'}</span>
                                 </div>
                             </div>
+
+                            <!-- Expiry Banner with Traffic Light -->
+                            <div class="flex items-center justify-between px-2.5 py-1.5 rounded-lg border text-xs mb-3 ${expInfo.bg}">
+                                <div class="flex items-center gap-1.5">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                                    <span class="font-semibold">Vto: ${med.expiry || 'S/F'}</span>
+                                </div>
+                                <span class="text-[10px] uppercase tracking-wider font-extrabold">${expInfo.label}</span>
+                            </div>
+
+                            ${med.barcode ? `
+                                <div class="flex items-center gap-1 text-[10px] font-mono text-slate-400 mb-3 px-1">
+                                    <span>||| EAN:</span>
+                                    <span class="text-slate-600 font-semibold">${med.barcode}</span>
+                                </div>
+                            ` : ''}
 
                             <!-- Current Stock vs Min Stock -->
                             <div class="flex items-baseline justify-between mb-3">
@@ -1014,9 +1152,206 @@
             const criticalCount = medications.filter(item => item.stock <= item.minStock).length;
             document.getElementById('kpiCriticalCount').innerText = criticalCount;
 
+            // Count nearing expiration (< 6 months)
+            const nearExpiryCount = medications.filter(item => {
+                const exp = getExpiryStatus(item.expiry);
+                return exp.status === 'SHORT' || exp.status === 'CRITICAL' || exp.status === 'EXPIRED';
+            }).length;
+            document.getElementById('kpiExpiryNearCount').innerText = nearExpiryCount;
+
             const today = new Date().toLocaleDateString('es-AR');
             const todayCount = logs.filter(log => log.timestamp && log.timestamp.includes(today)).length;
             document.getElementById('kpiTodayTrans').innerText = todayCount;
+        }
+
+        function setExpiryFilterQuick() {
+            const statusFilter = document.getElementById('filterStatus');
+            if (statusFilter) {
+                statusFilter.value = 'EXP_SHORT';
+                renderApp();
+                showToast("Mostrando lotes con vencimiento próximo para comercialización");
+            }
+        }
+
+        // --- Sound Bip for Barcode Scanner ---
+        function playBeepSound() {
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = "sine";
+                osc.frequency.setValueAtTime(1200, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.12);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.12);
+            } catch (e) {
+                console.log("Audio no permitido", e);
+            }
+        }
+
+        // --- In-App Barcode Camera Scanner ---
+        async function openScannerModal() {
+            scanTargetInput = null;
+            document.getElementById('scannerMatchedBox').classList.add('hidden');
+            document.getElementById('scannerModalPlaceholder').classList.remove('hidden');
+            document.getElementById('scannerModal').classList.remove('hidden');
+
+            initCameraScanner();
+        }
+
+        function scanBarcodeForForm() {
+            scanTargetInput = 'medBarcode';
+            document.getElementById('scannerMatchedBox').classList.add('hidden');
+            document.getElementById('scannerModalPlaceholder').classList.remove('hidden');
+            document.getElementById('scannerModal').classList.remove('hidden');
+
+            initCameraScanner();
+        }
+
+        async function initCameraScanner() {
+            if (isAppScannerActive) return;
+
+            try {
+                appHtml5QrCode = new Html5Qrcode("barcodeVideoContainer");
+                const config = { 
+                    fps: 15,
+                    qrbox: { width: 240, height: 160 },
+                    aspectRatio: 1.333334,
+                    formatsToSupport: [
+                        Html5QrcodeSupportedFormats.EAN_13,
+                        Html5QrcodeSupportedFormats.EAN_8,
+                        Html5QrcodeSupportedFormats.CODE_128,
+                        Html5QrcodeSupportedFormats.DATA_MATRIX,
+                        Html5QrcodeSupportedFormats.QR_CODE
+                    ]
+                };
+
+                await appHtml5QrCode.start(
+                    { facingMode: "environment" },
+                    config,
+                    handleCameraScanSuccess,
+                    () => {}
+                );
+
+                isAppScannerActive = true;
+                document.getElementById('scannerModalPlaceholder').classList.add('hidden');
+            } catch (err) {
+                console.error("Error al iniciar cámara:", err);
+                document.getElementById('scannerModalPlaceholder').innerText = "No se pudo acceder a la cámara. Permita los permisos en su navegador.";
+            }
+        }
+
+        function handleCameraScanSuccess(decodedText) {
+            playBeepSound();
+
+            // If we were scanning to assign to a form input
+            if (scanTargetInput === 'medBarcode') {
+                const input = document.getElementById('medBarcode');
+                if (input) input.value = decodedText;
+                showToast(`Código ${decodedText} asignado al formulario`);
+                closeScannerModal();
+                return;
+            }
+
+            // Otherwise, match against medications catalogue
+            const matched = medications.find(m => m.barcode === decodedText || (m.batch && m.batch === decodedText));
+
+            const matchedBox = document.getElementById('scannerMatchedBox');
+            const matchedTitle = document.getElementById('scannerMatchedTitle');
+            const matchedBarcode = document.getElementById('scannerMatchedBarcode');
+
+            if (matched) {
+                lastScannedMedId = matched.id;
+                matchedTitle.innerText = `${matched.name} (${matched.lab})`;
+                matchedBarcode.innerText = `Código: ${decodedText} | Stock actual: ${matched.stock} ${matched.unit}`;
+                matchedBox.classList.remove('hidden');
+            } else {
+                lastScannedMedId = null;
+                matchedTitle.innerText = "Código no registrado en el inventario";
+                matchedBarcode.innerText = `Código leído: ${decodedText}. Podés editar un fármaco y asignarlo.`;
+                matchedBox.classList.remove('hidden');
+            }
+
+            // Pause for 1.8s
+            if (appHtml5QrCode && isAppScannerActive) {
+                appHtml5QrCode.pause();
+                setTimeout(() => {
+                    if (appHtml5QrCode && isAppScannerActive) appHtml5QrCode.resume();
+                }, 1800);
+            }
+        }
+
+        function scannerTriggerTx(type) {
+            if (!lastScannedMedId) return;
+            const medId = lastScannedMedId;
+            closeScannerModal();
+            openTxModal(medId, type);
+        }
+
+        async function closeScannerModal() {
+            if (appHtml5QrCode && isAppScannerActive) {
+                try {
+                    await appHtml5QrCode.stop();
+                    appHtml5QrCode.clear();
+                } catch (e) {
+                    console.error("Error cerrando scanner:", e);
+                }
+            }
+            isAppScannerActive = false;
+            document.getElementById('scannerModal').classList.add('hidden');
+        }
+
+        // --- Sales Report for Expirations (< 6 months) ---
+        function openExpiryReportModal() {
+            const nearExpiryMeds = medications.filter(m => {
+                const exp = getExpiryStatus(m.expiry);
+                return exp.status === 'SHORT' || exp.status === 'CRITICAL' || exp.status === 'EXPIRED';
+            });
+
+            const textarea = document.getElementById('salesReportText');
+
+            if (nearExpiryMeds.length === 0) {
+                textarea.value = `¡Excelente! No hay psicotrópicos con vencimiento próximo (< 6 meses) en Droguería Generia (Ciudadela).`;
+            } else {
+                const today = new Date().toLocaleDateString('es-AR');
+                let text = `📦 *DROGUERÍA GENERIA - REPORTE DE VENCIMIENTO CORTO PARA VENTAS*\n`;
+                text += `📅 Fecha: ${today} | Depósito: Ciudadela\n`;
+                text += `⚠️ *Lotes con prioridad comercial de salida inmediata:*\n\n`;
+
+                nearExpiryMeds.forEach((m, idx) => {
+                    const exp = getExpiryStatus(m.expiry);
+                    const tag = exp.status === 'EXPIRED' ? '❌ VENCIDO' : exp.status === 'CRITICAL' ? '🚨 URGENTE' : '⏳ CORTO';
+                    text += `${idx + 1}. *${m.name}* (${m.lab})\n`;
+                    text += `   • Stock: *${m.stock} ${m.unit}* [${m.presentation}]\n`;
+                    text += `   • Lote: ${m.batch || 'S/L'} | Vto: *${m.expiry || 'S/F'}* (${tag})\n`;
+                    text += `   • Ubicación: ${m.location}\n\n`;
+                });
+
+                text += `👉 *Acción sugerida para Ventas:* Priorizar en pedidos a clínicas, sanatorios y farmacias con descuento por lote corto.`;
+                textarea.value = text;
+            }
+
+            document.getElementById('expiryReportModal').classList.remove('hidden');
+        }
+
+        function closeExpiryReportModal() {
+            document.getElementById('expiryReportModal').classList.add('hidden');
+        }
+
+        function copySalesReportText() {
+            const textarea = document.getElementById('salesReportText');
+            textarea.select();
+            document.execCommand('copy');
+            showToast("Reporte comercial copiado al portapapeles");
+        }
+
+        function shareReportWhatsApp() {
+            const text = document.getElementById('salesReportText').value;
+            const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
+            window.open(url, '_blank');
         }
 
         // Populate laboratory selects in forms
@@ -1127,6 +1462,7 @@
             document.getElementById('medFormId').value = '';
             document.getElementById('medName').value = '';
             document.getElementById('medDrug').value = '';
+            document.getElementById('medBarcode').value = '';
             document.getElementById('medLocation').value = 'Estante A';
             document.getElementById('medBatch').value = '';
             document.getElementById('medExpiry').value = '';
@@ -1149,6 +1485,7 @@
             document.getElementById('medName').value = med.name;
             document.getElementById('medDrug').value = med.drug;
             document.getElementById('medLab').value = med.lab;
+            document.getElementById('medBarcode').value = med.barcode || '';
             document.getElementById('medPresentation').value = med.presentation || 'Cajas estuchadas';
             document.getElementById('medUnit').value = med.unit || 'Cajas';
             document.getElementById('medLocation').value = med.location;
@@ -1179,6 +1516,7 @@
             const name = document.getElementById('medName').value.trim();
             const drug = document.getElementById('medDrug').value.trim();
             const lab = document.getElementById('medLab').value;
+            const barcode = document.getElementById('medBarcode').value.trim();
             const presentation = document.getElementById('medPresentation').value;
             const unit = document.getElementById('medUnit').value;
             const location = document.getElementById('medLocation').value.trim();
@@ -1194,6 +1532,7 @@
                     med.name = name;
                     med.drug = drug;
                     med.lab = lab;
+                    med.barcode = barcode;
                     med.presentation = presentation;
                     med.unit = unit;
                     med.location = location;
@@ -1210,6 +1549,7 @@
                     name,
                     drug,
                     lab,
+                    barcode,
                     presentation,
                     unit,
                     location,
@@ -1470,10 +1810,10 @@
             }
 
             let csv = "\uFEFF"; // UTF-8 BOM for Excel
-            csv += "ID;Fármaco;Droga;Laboratorio;Presentación;Unidad;Ubicación;Lote;Vencimiento;Stock Actual;Punto Mínimo\n";
+            csv += "ID;Código de Barras;Fármaco;Droga;Laboratorio;Presentación;Unidad;Ubicación;Lote;Vencimiento;Stock Actual;Punto Mínimo\n";
 
             medications.forEach(m => {
-                csv += `"${m.id}";"${m.name}";"${m.drug}";"${m.lab}";"${m.presentation}";"${m.unit}";"${m.location}";"${m.batch || ''}";"${m.expiry || ''}";${m.stock};${m.minStock}\n`;
+                csv += `"${m.id}";"${m.barcode || ''}";"${m.name}";"${m.drug}";"${m.lab}";"${m.presentation}";"${m.unit}";"${m.location}";"${m.batch || ''}";"${m.expiry || ''}";${m.stock};${m.minStock}\n`;
             });
 
             const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
