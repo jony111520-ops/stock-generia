@@ -719,7 +719,6 @@
 
         function loadInitialData() {
             try {
-                // Check if user had old storage from previous prompt version and migrate
                 const oldMeds = localStorage.getItem('generia_stock_meds');
                 if (oldMeds && !localStorage.getItem(STORAGE_KEY_MEDS)) {
                     localStorage.setItem(STORAGE_KEY_MEDS, oldMeds);
@@ -986,13 +985,12 @@
         function getExpiryStatus(expiryStr) {
             if (!expiryStr) return { status: 'UNKNOWN', label: 'S/F', color: 'slate', months: 999 };
             
-            // Format YYYY-MM
             const parts = expiryStr.split('-');
             if (parts.length < 2) return { status: 'UNKNOWN', label: expiryStr, color: 'slate', months: 999 };
             
             const expYear = parseInt(parts[0]);
-            const expMonth = parseInt(parts[1]) - 1; // 0-indexed
-            const expDate = new Date(expYear, expMonth + 1, 0); // last day of month
+            const expMonth = parseInt(parts[1]) - 1;
+            const expDate = new Date(expYear, expMonth + 1, 0);
             
             const now = new Date();
             const diffTime = expDate - now;
@@ -1152,7 +1150,6 @@
             const criticalCount = medications.filter(item => item.stock <= item.minStock).length;
             document.getElementById('kpiCriticalCount').innerText = criticalCount;
 
-            // Count nearing expiration (< 6 months)
             const nearExpiryCount = medications.filter(item => {
                 const exp = getExpiryStatus(item.expiry);
                 return exp.status === 'SHORT' || exp.status === 'CRITICAL' || exp.status === 'EXPIRED';
@@ -1161,7 +1158,8 @@
 
             const today = new Date().toLocaleDateString('es-AR');
             const todayCount = logs.filter(log => log.timestamp && log.timestamp.includes(today)).length;
-            document.getElementById('kpiTodayTrans').innerText = todayCount;
+            const todayEl = document.getElementById('kpiTodayTrans');
+            if (todayEl) todayEl.innerText = todayCount;
         }
 
         function setExpiryFilterQuick() {
@@ -1192,27 +1190,59 @@
             }
         }
 
-        // --- In-App Barcode Camera Scanner ---
+        // --- In-App Barcode Camera Scanner (With Robust Lifecycle & Hardware Release) ---
+        async function stopAndCleanScanner() {
+            if (appHtml5QrCode) {
+                try {
+                    if (isAppScannerActive) {
+                        await appHtml5QrCode.stop();
+                    }
+                    await appHtml5QrCode.clear();
+                } catch (e) {
+                    console.warn("Limpiando lector:", e);
+                }
+                appHtml5QrCode = null;
+            }
+
+            // Force stop any lingering camera tracks
+            const container = document.getElementById('barcodeVideoContainer');
+            if (container) {
+                const videoEl = container.querySelector('video');
+                if (videoEl && videoEl.srcObject) {
+                    try {
+                        const tracks = videoEl.srcObject.getTracks();
+                        tracks.forEach(track => track.stop());
+                        videoEl.srcObject = null;
+                    } catch (err) {
+                        console.warn("Deteniendo streams residuales:", err);
+                    }
+                }
+                container.innerHTML = '<div id="scannerModalPlaceholder" class="text-center p-4 text-slate-400 text-xs">Iniciando cámara trasera...</div>';
+            }
+            isAppScannerActive = false;
+        }
+
         async function openScannerModal() {
             scanTargetInput = null;
             document.getElementById('scannerMatchedBox').classList.add('hidden');
-            document.getElementById('scannerModalPlaceholder').classList.remove('hidden');
             document.getElementById('scannerModal').classList.remove('hidden');
 
+            await stopAndCleanScanner();
             initCameraScanner();
         }
 
-        function scanBarcodeForForm() {
+        async function scanBarcodeForForm() {
             scanTargetInput = 'medBarcode';
             document.getElementById('scannerMatchedBox').classList.add('hidden');
-            document.getElementById('scannerModalPlaceholder').classList.remove('hidden');
             document.getElementById('scannerModal').classList.remove('hidden');
 
+            await stopAndCleanScanner();
             initCameraScanner();
         }
 
         async function initCameraScanner() {
-            if (isAppScannerActive) return;
+            const placeholder = document.getElementById('scannerModalPlaceholder');
+            if (placeholder) placeholder.classList.remove('hidden');
 
             try {
                 appHtml5QrCode = new Html5Qrcode("barcodeVideoContainer");
@@ -1237,26 +1267,29 @@
                 );
 
                 isAppScannerActive = true;
-                document.getElementById('scannerModalPlaceholder').classList.add('hidden');
+                const ph = document.getElementById('scannerModalPlaceholder');
+                if (ph) ph.classList.add('hidden');
             } catch (err) {
                 console.error("Error al iniciar cámara:", err);
-                document.getElementById('scannerModalPlaceholder').innerText = "No se pudo acceder a la cámara. Permita los permisos en su navegador.";
+                const ph = document.getElementById('scannerModalPlaceholder');
+                if (ph) {
+                    ph.classList.remove('hidden');
+                    ph.innerText = "No se pudo acceder a la cámara. Verificá los permisos del navegador.";
+                }
             }
         }
 
         function handleCameraScanSuccess(decodedText) {
             playBeepSound();
 
-            // If we were scanning to assign to a form input
             if (scanTargetInput === 'medBarcode') {
                 const input = document.getElementById('medBarcode');
                 if (input) input.value = decodedText;
-                showToast(`Código ${decodedText} asignado al formulario`);
+                showToast(`Código ${decodedText} capturado`);
                 closeScannerModal();
                 return;
             }
 
-            // Otherwise, match against medications catalogue
             const matched = medications.find(m => m.barcode === decodedText || (m.batch && m.batch === decodedText));
 
             const matchedBox = document.getElementById('scannerMatchedBox');
@@ -1275,7 +1308,6 @@
                 matchedBox.classList.remove('hidden');
             }
 
-            // Pause for 1.8s
             if (appHtml5QrCode && isAppScannerActive) {
                 appHtml5QrCode.pause();
                 setTimeout(() => {
@@ -1292,15 +1324,7 @@
         }
 
         async function closeScannerModal() {
-            if (appHtml5QrCode && isAppScannerActive) {
-                try {
-                    await appHtml5QrCode.stop();
-                    appHtml5QrCode.clear();
-                } catch (e) {
-                    console.error("Error cerrando scanner:", e);
-                }
-            }
-            isAppScannerActive = false;
+            await stopAndCleanScanner();
             document.getElementById('scannerModal').classList.add('hidden');
         }
 
@@ -1435,7 +1459,6 @@
                 med.stock -= qty;
             }
 
-            // Record transaction in audit log
             logs.unshift({
                 id: 'log-' + Date.now(),
                 timestamp: new Date().toLocaleString('es-AR'),
@@ -1526,7 +1549,6 @@
             const minStock = parseInt(document.getElementById('medMinStock').value) || 0;
 
             if (id) {
-                // Update existing
                 const med = medications.find(m => m.id === id);
                 if (med) {
                     med.name = name;
@@ -1543,7 +1565,6 @@
                     showToast('Fármaco actualizado con éxito');
                 }
             } else {
-                // Create new
                 const newMed = {
                     id: 'med-' + Date.now(),
                     name,
@@ -1672,13 +1693,11 @@
             const clean = newName.trim();
             if (!clean || clean === oldName) return;
 
-            // Update in laboratories array
             const idx = laboratories.indexOf(oldName);
             if (idx !== -1) {
                 laboratories[idx] = clean;
             }
 
-            // Update in all associated medications
             let updatedCount = 0;
             medications.forEach(m => {
                 if (m.lab === oldName) {
@@ -1809,7 +1828,7 @@
                 return;
             }
 
-            let csv = "\uFEFF"; // UTF-8 BOM for Excel
+            let csv = "\uFEFF";
             csv += "ID;Código de Barras;Fármaco;Droga;Laboratorio;Presentación;Unidad;Ubicación;Lote;Vencimiento;Stock Actual;Punto Mínimo\n";
 
             medications.forEach(m => {
