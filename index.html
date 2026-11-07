@@ -27,11 +27,11 @@
 </head>
 <body class="bg-slate-100 text-slate-800 antialiased min-h-screen flex flex-col">
 
-    <!-- Top Header Clásico y Compacto -->
+    <!-- Top Header Clásico, Compacto y Sin Trabas -->
     <header class="bg-slate-900 text-white border-b border-slate-800 sticky top-0 z-30 shadow-md">
         <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-2.5 sm:py-3 flex flex-wrap md:flex-nowrap justify-between items-center gap-2 sm:gap-3">
             
-            <!-- Branding + Selector de Usuario Integrado -->
+            <!-- Branding + Selector Simple de Usuario -->
             <div class="flex items-center gap-2.5 sm:gap-3 flex-wrap sm:flex-nowrap">
                 <div class="flex items-center gap-2">
                     <div class="bg-emerald-500 text-slate-950 p-1.5 sm:p-2 rounded-xl flex items-center justify-center font-black shadow-sm shrink-0">
@@ -48,26 +48,26 @@
                     </div>
                 </div>
 
-                <!-- Selector de Usuario justo al lado de la marca (en reemplazo de Ciudadela) -->
-                <div class="flex items-center bg-slate-800 border border-slate-700 rounded-lg p-0.5 sm:p-1 gap-1 shadow-sm">
-                    <div class="flex items-center gap-1 px-2 py-1 bg-slate-900 rounded-md">
-                        <span class="text-xs">👤</span>
-                        <select id="activeOperatorSelect" onchange="handleOperatorSelectChange(this.value)" class="bg-transparent text-white text-xs font-bold focus:outline-none cursor-pointer max-w-[130px] sm:max-w-none truncate">
-                            <!-- Opciones cargadas dinámicamente -->
-                        </select>
-                    </div>
-                    <button onclick="promptNewOperator()" title="Ingresar nuevo usuario" class="px-2 py-1 text-[11px] bg-slate-700 hover:bg-slate-600 text-emerald-400 font-bold rounded-md transition flex items-center shrink-0">
-                        <span>+ Otro</span>
-                    </button>
+                <!-- Selector Ágil de Usuario (Directo, sin popups molestos) -->
+                <div class="flex items-center bg-slate-800 border border-slate-700 rounded-lg px-2 py-1 gap-1.5 shadow-sm">
+                    <span class="text-xs">👤</span>
+                    <select id="activeOperatorSelect" onchange="changeOperator(this.value)" class="bg-transparent text-white text-xs font-bold focus:outline-none cursor-pointer">
+                    </select>
                 </div>
             </div>
 
-            <!-- Action Buttons alineados cómodamente -->
+            <!-- Botones de Acción -->
             <div class="flex items-center gap-1.5 sm:gap-2 flex-wrap justify-end">
                 <!-- Botón Escáner -->
                 <button onclick="openScannerModal()" class="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 bg-sky-600 hover:bg-sky-500 text-white rounded-lg text-xs font-bold shadow-sm transition">
                     <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path></svg>
                     <span>Escanear</span>
+                </button>
+
+                <!-- Botón Clientes Oficiales -->
+                <button onclick="openManageEntitiesModal()" class="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 bg-cyan-700 hover:bg-cyan-600 text-white rounded-lg text-xs font-bold shadow-sm transition">
+                    <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+                    <span>Clientes</span>
                 </button>
 
                 <!-- Botón Ventas Vencimientos -->
@@ -78,20 +78,14 @@
 
                 <!-- Botón Nuevo Fármaco -->
                 <button onclick="openNewMedModal()" class="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-semibold shadow-sm transition">
-                    <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                    <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path></svg>
                     <span>+ Fármaco</span>
                 </button>
 
-                <!-- Botón Libro de Actas -->
+                <!-- Botón Libro de Actas & Búsqueda de Pedidos -->
                 <button onclick="toggleAuditDrawer(true)" class="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-xs font-semibold border border-slate-700 transition">
                     <svg class="w-4 h-4 text-emerald-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                    <span>Actas</span>
-                </button>
-
-                <!-- Botón Nube -->
-                <button onclick="openCloudModal()" class="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-semibold shadow-sm transition">
-                    <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 00-9.78 2.096A4.001 4.001 0 003 15z"></path></svg>
-                    <span>Nube</span>
+                    <span>Actas & Pedidos</span>
                 </button>
             </div>
         </div>
@@ -201,14 +195,12 @@
                 </button>
             </div>
 
-            <!-- Video Container -->
             <div id="barcodeVideoContainer" class="w-full bg-slate-950 rounded-xl overflow-hidden min-h-[220px] flex items-center justify-center border border-slate-800 relative">
                 <div id="scannerModalPlaceholder" class="text-center p-4 text-slate-400 text-xs">
                     Iniciando cámara trasera...
                 </div>
             </div>
 
-            <!-- Scan result badge -->
             <div id="scannerMatchedBox" class="mt-3 p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs hidden">
                 <span class="text-[9px] uppercase font-bold text-slate-400 block">Producto Detectado:</span>
                 <p id="scannerMatchedTitle" class="font-bold text-slate-900 text-sm mt-0.5"></p>
@@ -267,9 +259,9 @@
         </div>
     </div>
 
-    <!-- Modal: Stock Entry / Exit Transaction -->
+    <!-- Modal: Stock Entry / Exit Transaction (Con N° Pedido de Venta y Clientes Oficiales) -->
     <div id="txModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl max-w-md w-full p-5 shadow-2xl border border-slate-200">
+        <div class="bg-white rounded-2xl max-w-md w-full p-5 shadow-2xl border border-slate-200 max-h-[92vh] overflow-y-auto custom-scrollbar">
             <div class="flex items-start justify-between mb-3 pb-2.5 border-b border-slate-100">
                 <div>
                     <span id="txModalBadge" class="text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full"></span>
@@ -291,24 +283,39 @@
                         <span id="txCurrentStock" class="font-bold text-slate-800 text-sm">0</span>
                     </div>
                     <div class="text-right">
-                        <span class="text-slate-500 block text-[11px]">Presentación:</span>
-                        <span id="txUnitLabel" class="font-semibold text-slate-700"></span>
+                        <span class="text-slate-500 block text-[11px]">Operando como:</span>
+                        <span id="txCurrentOperatorLabel" class="font-bold text-emerald-700"></span>
+                    </div>
+                </div>
+
+                <!-- Campo Entidad / Cliente con Código Oficial (Ej: 005992 o 002002) -->
+                <div id="txEntityRow">
+                    <div class="flex items-center justify-between mb-1">
+                        <label id="txEntityLabel" class="block text-xs font-bold text-slate-700">Cliente / Farmacia / Entidad *</label>
+                        <button type="button" onclick="openManageEntitiesModal()" class="text-[10px] text-cyan-600 font-bold hover:underline">+ Gestionar Clientes</button>
+                    </div>
+                    <input list="entitiesDataList" id="txEntity" placeholder="Escribí código o nombre (Ej: 005992 o VACCAREZZA)" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs font-semibold text-slate-900 focus:ring-2 focus:ring-cyan-500 focus:outline-none bg-white">
+                    <datalist id="entitiesDataList">
+                        <!-- Clientes con código y nombre -->
+                    </datalist>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label id="txQuantityLabel" class="block text-xs font-bold text-slate-700 mb-1">Cantidad *</label>
+                        <input type="number" id="txQuantity" min="1" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-lg font-bold text-slate-900 focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                    </div>
+
+                    <div>
+                        <!-- N° de Pedido de Venta físico de la hoja -->
+                        <label id="txDocLabel" class="block text-xs font-bold text-slate-700 mb-1">N° Pedido de Venta *</label>
+                        <input type="text" id="txDocRef" required placeholder="Ej: 00085255" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm font-mono font-bold focus:ring-2 focus:ring-emerald-500 focus:outline-none">
                     </div>
                 </div>
 
                 <div>
-                    <label id="txQuantityLabel" class="block text-xs font-bold text-slate-700 mb-1">Cantidad</label>
-                    <input type="number" id="txQuantity" min="1" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-lg font-bold text-slate-900 focus:ring-2 focus:ring-emerald-500 focus:outline-none">
-                </div>
-
-                <div>
-                    <label id="txDocLabel" class="block text-xs font-bold text-slate-700 mb-1">N° Remito Oficial</label>
-                    <input type="text" id="txDocRef" required placeholder="Ej: REM-004581" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
-                </div>
-
-                <div>
-                    <label class="block text-xs font-bold text-slate-700 mb-1">Observaciones</label>
-                    <input type="text" id="txNotes" placeholder="Recepción / Entrega" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Observaciones / Nota</label>
+                    <input type="text" id="txNotes" placeholder="Bulto controlado / Preparado" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
                 </div>
 
                 <div class="flex items-center gap-2 pt-2">
@@ -352,7 +359,6 @@
                     <input type="number" id="invCountPhysicalQty" min="0" required oninput="calculateInventoryDiff()" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xl font-bold text-slate-900 focus:ring-2 focus:ring-indigo-500 focus:outline-none">
                 </div>
 
-                <!-- Diff preview box -->
                 <div id="invDiffBox" class="p-2.5 rounded-xl border border-slate-200 text-xs font-semibold flex items-center justify-between bg-slate-50">
                     <span class="text-slate-600">Diferencia de Recuento:</span>
                     <span id="invDiffBadge" class="font-bold text-sm text-slate-800">0</span>
@@ -387,7 +393,7 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                     <div class="sm:col-span-2">
                         <label class="block font-bold text-slate-700 mb-1">Nombre Comercial & Concentración *</label>
-                        <input type="text" id="medName" required placeholder="Ej: Clonazepam 2mg x 30" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                        <input type="text" id="medName" required placeholder="Ej: CLONAZEPAM 2 mg. x 15 comp VNR" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
                     </div>
 
                     <div class="sm:col-span-2">
@@ -424,7 +430,7 @@
 
                     <div>
                         <label class="block font-bold text-slate-700 mb-1">Ubicación Física *</label>
-                        <input type="text" id="medLocation" required placeholder="Estante A / Bóveda" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                        <input type="text" id="medLocation" required placeholder="P5-B3-N3 / Bóveda" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
                     </div>
 
                     <div class="sm:col-span-2">
@@ -440,7 +446,7 @@
 
                     <div>
                         <label class="block font-bold text-slate-700 mb-1">N° de Lote</label>
-                        <input type="text" id="medBatch" placeholder="L-4890" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                        <input type="text" id="medBatch" placeholder="Ej: 762341" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-none">
                     </div>
 
                     <div>
@@ -492,7 +498,64 @@
         </div>
     </div>
 
-    <!-- Modal: Cloud Sync -->
+    <!-- Modal: Gestión de Entidades / Clientes Oficiales -->
+    <div id="manageEntitiesModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-xl w-full p-5 shadow-2xl border border-slate-200 max-h-[90vh] flex flex-col">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-3">
+                <div class="flex items-center gap-2">
+                    <div class="p-1.5 bg-cyan-100 text-cyan-800 rounded-lg">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-bold text-slate-900">Catálogo de Clientes Oficiales</h3>
+                        <p class="text-[10px] text-slate-500">Con código numérico oficial de RalPharma</p>
+                    </div>
+                </div>
+                <button onclick="closeManageEntitiesModal()" class="text-slate-400 hover:text-slate-600 p-1">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+
+            <!-- Agregar un solo cliente con código -->
+            <div class="grid grid-cols-1 sm:grid-cols-12 gap-2 mb-3">
+                <input type="text" id="newEntityCode" placeholder="Código (Ej: 005992)" class="sm:col-span-4 px-3 py-2 border border-slate-300 rounded-lg text-xs font-mono font-bold focus:ring-2 focus:ring-cyan-500 focus:outline-none">
+                <input type="text" id="newEntityName" placeholder="Nombre de Farmacia (Ej: FCIA. VACCAREZZA)" class="sm:col-span-6 px-3 py-2 border border-slate-300 rounded-lg text-xs font-semibold uppercase focus:ring-2 focus:ring-cyan-500 focus:outline-none">
+                <button onclick="addSingleEntityWithCode()" class="sm:col-span-2 px-3 py-2 bg-cyan-700 hover:bg-cyan-600 text-white text-xs font-bold rounded-lg transition">+ Crear</button>
+            </div>
+
+            <!-- Importador Rápido desde Excel -->
+            <details class="mb-3 bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs">
+                <summary class="font-bold text-cyan-800 cursor-pointer hover:underline flex items-center justify-between">
+                    <span>⚡ Importador masivo (Copiá y pegá desde Excel)</span>
+                    <span class="text-[10px] text-slate-400">Abrir</span>
+                </summary>
+                <div class="mt-2 space-y-2">
+                    <p class="text-[11px] text-slate-500 leading-relaxed">
+                        Formato: <code>CÓDIGO - NOMBRE</code> o <code>CÓDIGO [TAB] NOMBRE</code>:
+                    </p>
+                    <textarea id="bulkEntitiesTextarea" rows="4" placeholder="005992 - FCIA. VACCAREZZA - PIVA EDUARDO&#10;002002 - FCIA. PAZOS FRANCISCO" class="w-full p-2 bg-white border border-slate-300 rounded-lg text-xs font-mono text-slate-800 uppercase focus:outline-none"></textarea>
+                    <div class="flex justify-end">
+                        <button onclick="importBulkEntitiesWithCodes()" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-lg transition">
+                            Procesar Clientes & Sincronizar
+                        </button>
+                    </div>
+                </div>
+            </details>
+
+            <!-- Lista de Entidades Registradas -->
+            <div class="flex items-center justify-between mb-1.5 text-xs text-slate-500 font-bold">
+                <span>Clientes Cargados (<span id="entitiesCountBadge">0</span>)</span>
+                <span class="text-[10px] text-slate-400">Buscables por código o nombre</span>
+            </div>
+            <div id="entitiesListContainer" class="flex-1 overflow-y-auto custom-scrollbar divide-y divide-slate-100 border border-slate-200 rounded-xl max-h-56">
+            </div>
+
+            <div class="mt-3 pt-2 border-t border-slate-100 text-right">
+                <button onclick="closeManageEntitiesModal()" class="px-4 py-2 bg-slate-900 text-white rounded-lg text-xs font-semibold hover:bg-slate-800 transition">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal: Historial Individual del Fármaco -->
     <div id="productHistoryModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-lg w-full p-5 shadow-2xl border border-slate-200 max-h-[85vh] flex flex-col">
@@ -511,14 +574,10 @@
                 </button>
             </div>
 
-            <!-- Resumen actual del producto -->
             <div id="productHistorySummary" class="grid grid-cols-3 gap-2 bg-slate-50 p-2.5 rounded-xl border border-slate-200 text-xs mb-3">
-                <!-- Se inyecta info resumida -->
             </div>
 
-            <!-- Lista de movimientos de este producto -->
             <div id="productHistoryList" class="flex-1 overflow-y-auto space-y-2 pr-1 custom-scrollbar">
-                <!-- Injected logs -->
             </div>
 
             <div class="pt-3 border-t border-slate-100 mt-3 text-right">
@@ -527,19 +586,28 @@
         </div>
     </div>
 
-    <!-- Audit Drawer -->
+    <!-- Audit Drawer con Buscador de Pedidos & Clientes -->
     <div id="auditDrawer" class="fixed inset-0 z-50 hidden">
         <div onclick="toggleAuditDrawer(false)" class="absolute inset-0 bg-slate-900/50 backdrop-blur-xs transition-opacity"></div>
-        <div class="absolute inset-y-0 right-0 max-w-md w-full bg-white shadow-2xl flex flex-col z-10">
-            <div class="p-4 bg-slate-900 text-white flex items-center justify-between">
+        <div class="absolute inset-y-0 right-0 max-w-xl w-full bg-white shadow-2xl flex flex-col z-10">
+            <div class="p-4 bg-slate-900 text-white flex items-center justify-between border-b border-slate-800">
                 <div>
                     <h3 class="font-bold text-sm">Libro de Entradas y Salidas</h3>
-                    <p class="text-xs text-slate-400">Auditoría cronológica de psicotrópicos</p>
+                    <p class="text-xs text-slate-400">Rastreador de N° Pedido de Venta, Clientes y Operadores</p>
                 </div>
                 <button onclick="toggleAuditDrawer(false)" class="text-slate-400 hover:text-white p-1">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                 </button>
             </div>
+
+            <!-- Buscador Dinámico en el Libro de Actas -->
+            <div class="p-3 bg-slate-100 border-b border-slate-200">
+                <div class="relative">
+                    <svg class="w-4 h-4 absolute left-3 top-2.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                    <input type="text" id="auditSearchInput" oninput="renderAuditLogs()" placeholder="🔍 Buscar por N° Pedido (ej: 00085255), código o cliente..." class="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-lg text-xs font-semibold text-slate-800 focus:ring-2 focus:ring-cyan-500 focus:outline-none bg-white">
+                </div>
+            </div>
+
             <div id="auditLogContainer" class="flex-1 overflow-y-auto p-4 space-y-2.5 custom-scrollbar">
             </div>
         </div>
@@ -551,37 +619,13 @@
         <span id="toastMsg">Mensaje</span>
     </div>
 
-    <!-- Modal: Ingreso Rápido de Nuevo Operador -->
-    <div id="operatorPromptModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl max-w-sm w-full p-5 shadow-2xl border border-slate-200">
-            <div class="flex items-center justify-between pb-2.5 border-b border-slate-100 mb-3">
-                <div class="flex items-center gap-2">
-                    <span class="text-lg">👤</span>
-                    <h3 class="text-sm font-bold text-slate-900">Identificación de Usuario</h3>
-                </div>
-                <button onclick="closeOperatorPromptModal()" class="text-slate-400 hover:text-slate-600 p-1">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                </button>
-            </div>
-            <p class="text-xs text-slate-500 mb-3">Escribí tu nombre o puesto para que quede asentado en el Libro de Actas cada vez que muevas mercadería:</p>
-            <form onsubmit="submitNewOperator(event)" class="space-y-3">
-                <div>
-                    <input type="text" id="newOperatorInputName" required placeholder="Ej: Lucas (Depósito), Carla DT..." class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm font-semibold focus:ring-2 focus:ring-emerald-500 focus:outline-none">
-                </div>
-                <div class="flex items-center gap-2 pt-1">
-                    <button type="button" onclick="closeOperatorPromptModal()" class="w-1/2 py-2 px-3 rounded-lg border border-slate-300 text-slate-700 text-xs font-semibold hover:bg-slate-100 transition">Cancelar</button>
-                    <button type="submit" class="w-1/2 py-2 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition">Establecer Usuario</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
     <script>
         const STORAGE_KEY_MEDS = 'generia_stock_meds_v2';
         const STORAGE_KEY_LABS = 'generia_stock_labs_v2';
         const STORAGE_KEY_LOGS = 'generia_stock_logs_v2';
         const STORAGE_KEY_OPERATOR = 'generia_stock_operator';
         const STORAGE_KEY_OPERATORS_LIST = 'generia_stock_operators_list';
+        const STORAGE_KEY_ENTITIES = 'generia_stock_entities_v2';
 
         const DEFAULT_FIREBASE_CONFIG = {
             apiKey: "AIzaSyCmw9QnIDNiofWhs-6QuglxcJHtshYYOQk",
@@ -593,22 +637,47 @@
             measurementId: "G-VQ3DPY8C5M"
         };
 
-        const DEFAULT_LABS = ["Vannier", "Biotenk", "Denver", "Rospaw"];
+        const DEFAULT_LABS = ["Vannier", "Biotenk", "Denver", "Rospaw", "Savant"];
         const DEFAULT_OPERATORS = ["Jony", "Javi", "Nestor", "Ceci", "Anyerson"];
+
+        // Catálogo oficial de clientes reales de RalPharma
+        const DEFAULT_ENTITIES = [
+            { code: "005992", name: "FCIA. VACCAREZZA - PIVA EDUARDO" },
+            { code: "002002", name: "FCIA. PAZOS FRANCISCO" },
+            { code: "006312", name: "FCIA. IANNI MELINA" },
+            { code: "003045", name: "FCIA. ESCALADA DE LANUS" },
+            { code: "001604", name: "SIND. DE TRABAJADOR CERVECERO" },
+            { code: "003155", name: "FCIA. BEAUJEAN SCS" },
+            { code: "003158", name: "FCIA. VEMIR FARMACEUTICA SCS" },
+            { code: "003162", name: "FCIA. TOMASIN MARIA CRISTINA" },
+            { code: "003169", name: "GALO FARMA SCS" },
+            { code: "003197", name: "FCIA. KOP-TA S. C. S." },
+            { code: "003276", name: "EBERBACH MONICA ELIZABETH" },
+            { code: "003280", name: "FCIA. GUZ - GON S.C.S." },
+            { code: "003287", name: "FCIA. FIGUEIRAS GABRIELA FE" },
+            { code: "003291", name: "MACIEL SERGIO ADRIAN" },
+            { code: "003294", name: "FCIA. POSDATA S.C.S." }
+        ];
+
+        // Productos reales de la hoja de preparación de Droguería Generia
         const DEFAULT_MEDS = [
-            { id: "med-1", barcode: "7798024310012", name: "Clonazepam 2mg x 30", drug: "Clonazepam", lab: "Vannier", presentation: "Cajas estuchadas", unit: "Cajas", location: "Estante A - Sector 1", batch: "VN-2024-01", expiry: "2026-11", stock: 45, minStock: 20 },
-            { id: "med-2", barcode: "7798099210045", name: "Alprazolam 1mg (Hospitalario)", drug: "Alprazolam", lab: "Vannier", presentation: "Blisters sueltos", unit: "Blisters", location: "Estante A - Sector 2", batch: "VN-9921", expiry: "2026-08", stock: 120, minStock: 50 },
-            { id: "med-3", barcode: "7798033221199", name: "Diazepam 10mg/2ml Inyectable", drug: "Diazepam", lab: "Biotenk", presentation: "Ampollas", unit: "Ampollas", location: "Estante B - Refrigerado", batch: "BK-7740", expiry: "2027-02", stock: 85, minStock: 30 },
-            { id: "med-4", barcode: "7798011223344", name: "Morfina Clorhidrato 10mg/1ml", drug: "Morfina Clorhidrato", lab: "Denver", presentation: "Ampollas", unit: "Ampollas", location: "Bóveda de Seguridad", batch: "DF-5021", expiry: "2026-12", stock: 12, minStock: 25 },
-            { id: "med-5", barcode: "7798055667788", name: "Fentanilo 0.05mg/ml x 5ml", drug: "Fentanilo Citrato", lab: "Denver", presentation: "Ampollas", unit: "Ampollas", location: "Bóveda de Seguridad", batch: "DF-1144", expiry: "2027-05", stock: 8, minStock: 15 },
-            { id: "med-6", barcode: "7798066554433", name: "Haloperidol 5mg x 60", drug: "Haloperidol", lab: "Rospaw", presentation: "Cajas estuchadas", unit: "Cajas", location: "Estante B - Nivel 3", batch: "RP-3011", expiry: "2026-09", stock: 35, minStock: 15 }
+            { id: "med-1", barcode: "7798024310012", name: "CLONAZEPAM 2 mg. x 15 comp VNR", drug: "Clonazepam", lab: "Vannier", presentation: "Blisters sueltos", unit: "BLT", location: "P5-B3-N3 / P5-D-N1", batch: "762341", expiry: "2029-04", stock: 1381, minStock: 200 },
+            { id: "med-2", barcode: "7798099210045", name: "QUETIAPINA VANNIER 100 mg comp. x 30", drug: "Quetiapina", lab: "Vannier", presentation: "Cajas estuchadas", unit: "Cajas", location: "Estante A - Sector 2", batch: "1631079", expiry: "2028-05", stock: 24, minStock: 12 },
+            { id: "med-3", barcode: "7798033221199", name: "QUETIAROS 25 mg comp. x 30", drug: "Quetiapina", lab: "Vannier", presentation: "Cajas estuchadas", unit: "Cajas", location: "Estante A - Sector 3", batch: "244745", expiry: "2028-03", stock: 15, minStock: 10 },
+            { id: "med-4", barcode: "7798011223344", name: "OLANZAPINA 10 mg x 7 comp RSP", drug: "Olanzapina", lab: "Rospaw", presentation: "Cajas estuchadas", unit: "Cajas", location: "Bóveda de Seguridad", batch: "314757", expiry: "2028-03", stock: 40, minStock: 15 },
+            { id: "med-5", barcode: "7798055667788", name: "PREGABALINA 75 mg x 14 caps VNR", drug: "Pregabalina", lab: "Vannier", presentation: "Cajas estuchadas", unit: "Cajas", location: "Estante B - Nivel 2", batch: "1602041", expiry: "2028-03", stock: 120, minStock: 30 },
+            { id: "med-6", barcode: "7798066554433", name: "TRAMADOL 50 mg x 10 comp BTK", drug: "Tramadol", lab: "Biotenk", presentation: "Cajas estuchadas", unit: "Cajas", location: "Estante B - Nivel 3", batch: "TM084", expiry: "2027-07", stock: 55, minStock: 20 },
+            { id: "med-7", barcode: "7798044556611", name: "RISPERIDONA 1 mg x 10 comp VNR", drug: "Risperidona", lab: "Vannier", presentation: "Cajas estuchadas", unit: "Cajas", location: "Estante C", batch: "691043", expiry: "2028-03", stock: 90, minStock: 25 },
+            { id: "med-8", barcode: "7798044556622", name: "RISPERIDONA 2 mg x 10 comp VNR", drug: "Risperidona", lab: "Vannier", presentation: "Cajas estuchadas", unit: "Cajas", location: "Estante C", batch: "692068", expiry: "2028-11", stock: 75, minStock: 25 },
+            { id: "med-9", barcode: "7798044556633", name: "RISPERIDONA 3 mg x 10 comp VNR", drug: "Risperidona", lab: "Vannier", presentation: "Cajas estuchadas", unit: "Cajas", location: "Estante C", batch: "693071", expiry: "2028-05", stock: 60, minStock: 20 }
         ];
 
         let medications = [];
         let laboratories = [];
+        let entities = [];
         let logs = [];
         let knownOperators = [...DEFAULT_OPERATORS];
-        let currentOperator = "";
+        let currentOperator = "Jony"; // Por defecto arranca en Jony o el guardado
         let selectedLabFilter = 'ALL';
 
         let appHtml5QrCode = null;
@@ -621,6 +690,7 @@
         let unsubscribeLabs = null;
         let unsubscribeLogs = null;
         let unsubscribeOperators = null;
+        let unsubscribeEntities = null;
 
         window.addEventListener('DOMContentLoaded', () => {
             loadInitialData();
@@ -632,8 +702,18 @@
             try {
                 const storedLabs = localStorage.getItem(STORAGE_KEY_LABS);
                 laboratories = storedLabs ? JSON.parse(storedLabs) : [...DEFAULT_LABS];
+                
                 const storedMeds = localStorage.getItem(STORAGE_KEY_MEDS);
                 medications = storedMeds ? JSON.parse(storedMeds) : [...DEFAULT_MEDS];
+
+                const storedEntities = localStorage.getItem(STORAGE_KEY_ENTITIES);
+                if (storedEntities) {
+                    const parsed = JSON.parse(storedEntities);
+                    entities = parsed.map(item => (typeof item === 'string') ? { code: '000000', name: item } : item);
+                } else {
+                    entities = [...DEFAULT_ENTITIES];
+                }
+                
                 const storedLogs = localStorage.getItem(STORAGE_KEY_LOGS);
                 logs = storedLogs ? JSON.parse(storedLogs) : [];
                 
@@ -647,89 +727,66 @@
                     knownOperators = [...DEFAULT_OPERATORS];
                 }
 
-                currentOperator = localStorage.getItem(STORAGE_KEY_OPERATOR) || "";
+                currentOperator = localStorage.getItem(STORAGE_KEY_OPERATOR) || "Jony";
                 renderOperatorSelect();
+                populateEntitiesDatalist();
             } catch (e) {
                 laboratories = [...DEFAULT_LABS];
                 medications = [...DEFAULT_MEDS];
+                entities = [...DEFAULT_ENTITIES];
                 logs = [];
                 knownOperators = [...DEFAULT_OPERATORS];
-                currentOperator = "";
+                currentOperator = "Jony";
                 renderOperatorSelect();
+                populateEntitiesDatalist();
             }
+        }
+
+        function populateEntitiesDatalist() {
+            const datalist = document.getElementById('entitiesDataList');
+            if (!datalist) return;
+            datalist.innerHTML = entities.map(ent => `
+                <option value="${ent.code ? ent.code + ' - ' : ''}${ent.name}">${ent.name}</option>
+            `).join('');
+            
+            const badge = document.getElementById('entitiesCountBadge');
+            if (badge) badge.innerText = entities.length;
         }
 
         function renderOperatorSelect() {
-            const selDesktop = document.getElementById('activeOperatorSelect');
-            const selMobile = document.getElementById('activeOperatorSelectMobile');
+            const sel = document.getElementById('activeOperatorSelect');
+            if (!sel) return;
 
-            const placeholderDesktop = `<option value="" ${!currentOperator ? 'selected' : ''} disabled class="bg-slate-900 text-slate-400">👤 Seleccionar Usuario...</option>`;
-            const placeholderMobile = `<option value="" ${!currentOperator ? 'selected' : ''} disabled class="bg-slate-900 text-slate-400">Usuario...</option>`;
-
-            const optionsBody = knownOperators.map(op => `
+            let html = knownOperators.map(op => `
                 <option value="${op}" ${op === currentOperator ? 'selected' : ''} class="bg-slate-900 text-white font-semibold">${op}</option>
-            `).join('') + `
-                <option value="__CUSTOM__" class="bg-slate-900 text-emerald-400 font-bold">+ Escribir mi nombre...</option>
-            `;
+            `).join('');
 
-            if (selDesktop) {
-                selDesktop.innerHTML = placeholderDesktop + optionsBody;
-                selDesktop.value = currentOperator || "";
-            }
-            if (selMobile) {
-                selMobile.innerHTML = placeholderMobile + optionsBody;
-                selMobile.value = currentOperator || "";
-            }
+            html += `<option value="__NEW__" class="bg-slate-900 text-emerald-400 font-bold">+ Agregar nombre...</option>`;
+            sel.innerHTML = html;
         }
 
-        function handleOperatorSelectChange(val) {
-            if (val === '__CUSTOM__') {
-                promptNewOperator();
-            } else {
-                currentOperator = val;
-                localStorage.setItem(STORAGE_KEY_OPERATOR, currentOperator);
-                showToast(`Operador activo: ${currentOperator}`);
-            }
-        }
-
-        function promptNewOperator() {
-            const input = document.getElementById('newOperatorInputName');
-            if (input) input.value = '';
-            document.getElementById('operatorPromptModal').classList.remove('hidden');
-            setTimeout(() => { if (input) input.focus(); }, 100);
-        }
-
-        function closeOperatorPromptModal() {
-            document.getElementById('operatorPromptModal').classList.add('hidden');
-            renderOperatorSelect();
-        }
-
-        function submitNewOperator(e) {
-            e.preventDefault();
-            const input = document.getElementById('newOperatorInputName');
-            const clean = input ? input.value.trim() : '';
-
-            if (clean) {
-                currentOperator = clean;
-                if (!knownOperators.includes(clean)) {
-                    knownOperators.push(clean);
-                    localStorage.setItem(STORAGE_KEY_OPERATORS_LIST, JSON.stringify(knownOperators));
-                    if (db) db.collection('generia_stock').doc('operators').set({ items: knownOperators });
+        function changeOperator(val) {
+            if (val === '__NEW__') {
+                const newName = prompt("Escribí el nombre del nuevo operador:");
+                if (newName && newName.trim()) {
+                    const clean = newName.trim();
+                    currentOperator = clean;
+                    if (!knownOperators.includes(clean)) {
+                        knownOperators.push(clean);
+                        localStorage.setItem(STORAGE_KEY_OPERATORS_LIST, JSON.stringify(knownOperators));
+                        if (db) db.collection('generia_stock').doc('operators').set({ items: knownOperators });
+                    }
+                    localStorage.setItem(STORAGE_KEY_OPERATOR, currentOperator);
+                    renderOperatorSelect();
+                    showToast(`Operador activo: ${currentOperator}`);
+                } else {
+                    renderOperatorSelect();
                 }
-                localStorage.setItem(STORAGE_KEY_OPERATOR, currentOperator);
-                renderOperatorSelect();
-                closeOperatorPromptModal();
-                showToast(`Registrado como: ${currentOperator}`);
+                return;
             }
-        }
-
-        function ensureOperatorSelected() {
-            if (!currentOperator || currentOperator.trim() === '') {
-                promptNewOperator();
-                showToast("Por favor seleccioná o escribí tu nombre primero");
-                return false;
-            }
-            return true;
+            currentOperator = val;
+            localStorage.setItem(STORAGE_KEY_OPERATOR, currentOperator);
+            showToast(`Operador activo: ${currentOperator}`);
         }
 
         function saveMeds() {
@@ -744,7 +801,13 @@
 
         function saveLogs() {
             localStorage.setItem(STORAGE_KEY_LOGS, JSON.stringify(logs));
-            if (db) db.collection('generia_stock').doc('logs').set({ items: logs.slice(0, 100) });
+            if (db) db.collection('generia_stock').doc('logs').set({ items: logs.slice(0, 150) });
+        }
+
+        function saveEntities() {
+            localStorage.setItem(STORAGE_KEY_ENTITIES, JSON.stringify(entities));
+            if (db) db.collection('generia_stock').doc('entities').set({ items: entities });
+            populateEntitiesDatalist();
         }
 
         async function connectFirebase() {
@@ -779,6 +842,7 @@
             if (unsubscribeLabs) unsubscribeLabs();
             if (unsubscribeLogs) unsubscribeLogs();
             if (unsubscribeOperators) unsubscribeOperators();
+            if (unsubscribeEntities) unsubscribeEntities();
 
             unsubscribeMeds = db.collection('generia_stock').doc('medications')
                 .onSnapshot(doc => {
@@ -795,6 +859,15 @@
                         laboratories = doc.data().items;
                         localStorage.setItem(STORAGE_KEY_LABS, JSON.stringify(laboratories));
                         renderApp();
+                    }
+                });
+
+            unsubscribeEntities = db.collection('generia_stock').doc('entities')
+                .onSnapshot(doc => {
+                    if (doc.exists && doc.data()?.items) {
+                        entities = doc.data().items;
+                        localStorage.setItem(STORAGE_KEY_ENTITIES, JSON.stringify(entities));
+                        populateEntitiesDatalist();
                     }
                 });
 
@@ -936,7 +1009,6 @@
                                 </div>
                                 
                                 <div class="flex items-center gap-1">
-                                    <!-- Botón Historial de Movimientos de este producto -->
                                     <button onclick="openProductHistoryModal('${med.id}')" title="Ver historial de movimientos" class="p-1.5 text-slate-400 hover:text-indigo-600 rounded-lg hover:bg-indigo-50 transition">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                                     </button>
@@ -994,10 +1066,9 @@
                                 </button>
                                 <button onclick="openTxModal('${med.id}', 'OUT')" class="flex items-center justify-center gap-1 py-1.5 px-2.5 bg-rose-50 hover:bg-rose-100 active:bg-rose-200 text-rose-700 font-bold text-xs rounded-lg border border-rose-200 transition shadow-xs">
                                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path></svg>
-                                    <span>Egreso</span>
+                                    <span>Egreso (Pedido)</span>
                                 </button>
                             </div>
-                            <!-- Botón Modo Inventario / Conteo Físico -->
                             <button onclick="openInventoryCountModal('${med.id}')" class="w-full flex items-center justify-center gap-1.5 py-1.5 px-2 bg-indigo-50 hover:bg-indigo-100 active:bg-indigo-200 text-indigo-700 font-semibold text-[11px] rounded-lg border border-indigo-200 transition">
                                 <svg class="w-3.5 h-3.5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
                                 <span>📋 Conteo Físico / Inventario</span>
@@ -1145,7 +1216,7 @@
             if (matched) {
                 lastScannedMedId = matched.id;
                 matchedTitle.innerText = `${matched.name} (${matched.lab})`;
-                matchedBarcode.innerText = `Código: ${decodedText} | Stock: ${matched.stock} ${matched.unit}`;
+                matchedBarcode.innerText = `Código: ${decodedText} | Stock: ${matched.stock} ${med.unit}`;
                 matchedBox.classList.remove('hidden');
             } else {
                 lastScannedMedId = null;
@@ -1182,8 +1253,6 @@
         }
 
         function openInventoryCountModal(medId) {
-            if (!ensureOperatorSelected()) return;
-
             const med = medications.find(m => m.id === medId);
             if (!med) return;
 
@@ -1234,8 +1303,6 @@
 
         function submitInventoryCount(e) {
             e.preventDefault();
-            if (!ensureOperatorSelected()) return;
-
             const medId = document.getElementById('invCountMedId').value;
             const counted = parseInt(document.getElementById('invCountPhysicalQty').value);
             const reason = document.getElementById('invCountReason').value.trim() || 'Ajuste de inventario';
@@ -1254,6 +1321,8 @@
                 operator: currentOperator,
                 medName: `${med.name} (${med.lab})`,
                 type: 'COUNT',
+                entity: 'DEPOSITO CENTRAL',
+                clientCode: 'INT',
                 qty: Math.abs(diff),
                 unit: med.unit,
                 docRef: 'AUDIT-FISICA',
@@ -1266,7 +1335,7 @@
             saveLogs();
             closeInventoryCountModal();
             renderApp();
-            showToast(`Inventario guardado: ${med.stock} ${med.unit} contados`);
+            showToast(`Inventario guardado por ${currentOperator}: ${med.stock} ${med.unit}`);
         }
 
         function openExpiryReportModal() {
@@ -1321,34 +1390,41 @@
         }
 
         function openTxModal(medId, type) {
-            if (!ensureOperatorSelected()) return;
-
             const med = medications.find(m => m.id === medId);
             if (!med) return;
 
             document.getElementById('txMedId').value = med.id;
             document.getElementById('txType').value = type;
             document.getElementById('txCurrentStock').innerText = `${med.stock} ${med.unit}`;
-            document.getElementById('txUnitLabel').innerText = `${med.presentation} (${med.unit})`;
+            document.getElementById('txCurrentOperatorLabel').innerText = currentOperator;
             document.getElementById('txModalDrug').innerText = `${med.name} - ${med.drug} (${med.lab})`;
             document.getElementById('txQuantity').value = '';
-            document.getElementById('txDocRef').value = '';
             document.getElementById('txNotes').value = '';
+            document.getElementById('txEntity').value = '';
 
             const badge = document.getElementById('txModalBadge');
             const title = document.getElementById('txModalTitle');
             const submitBtn = document.getElementById('txSubmitBtn');
+            const docInput = document.getElementById('txDocRef');
+            const docLabel = document.getElementById('txDocLabel');
+            const entityLabel = document.getElementById('txEntityLabel');
 
             if (type === 'IN') {
                 badge.className = 'text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800';
                 badge.innerText = 'INGRESO / RECEPCIÓN';
                 title.innerText = 'Ingreso de Psicotrópicos';
+                entityLabel.innerText = 'Proveedor / Laboratorio de Origen';
+                docLabel.innerText = 'N° Comprobante / Remito de Ingreso *';
+                docInput.placeholder = 'Ej: REM-ORIGEN-4821';
                 submitBtn.className = 'w-1/2 py-2 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition';
                 submitBtn.innerText = 'Confirmar Ingreso';
             } else {
                 badge.className = 'text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-rose-100 text-rose-800';
                 badge.innerText = 'EGRESO / DESPACHO';
-                title.innerText = 'Egreso por Pedido';
+                title.innerText = 'Egreso por Pedido de Farmacia';
+                entityLabel.innerText = 'Cliente / Farmacia / Entidad *';
+                docLabel.innerText = 'N° Pedido de Venta *';
+                docInput.placeholder = 'Ej: 00085255';
                 submitBtn.className = 'w-1/2 py-2 px-3 rounded-lg bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold transition';
                 submitBtn.innerText = 'Confirmar Egreso';
             }
@@ -1362,23 +1438,57 @@
 
         function submitTransaction(e) {
             e.preventDefault();
-            if (!ensureOperatorSelected()) return;
 
             const medId = document.getElementById('txMedId').value;
             const type = document.getElementById('txType').value;
             const qty = parseInt(document.getElementById('txQuantity').value);
             const docRef = document.getElementById('txDocRef').value.trim();
             const notes = document.getElementById('txNotes').value.trim();
+            let rawEntity = document.getElementById('txEntity').value.trim().toUpperCase();
 
             const med = medications.find(m => m.id === medId);
             if (!med) return;
 
-            const prevStock = med.stock;
-            if (type === 'OUT' && qty > med.stock) {
-                showToast(`Stock insuficiente (${med.stock} disponibles)`);
-                return;
+            let clientCode = '';
+            let clientName = rawEntity;
+
+            if (type === 'OUT') {
+                if (!rawEntity) {
+                    showToast("Por favor ingresá la Farmacia o Cliente");
+                    return;
+                }
+                if (qty > med.stock) {
+                    showToast(`Stock insuficiente (${med.stock} disponibles)`);
+                    return;
+                }
+
+                // Autodetectar código si coincide o registrar nuevo
+                const matchedEntity = entities.find(e => 
+                    (e.code && rawEntity.startsWith(e.code)) || 
+                    (e.name && (e.name === rawEntity || rawEntity.includes(e.name)))
+                );
+
+                if (matchedEntity) {
+                    clientCode = matchedEntity.code || '';
+                    clientName = matchedEntity.name;
+                } else {
+                    if (rawEntity.includes(' - ')) {
+                        const parts = rawEntity.split(' - ');
+                        clientCode = parts[0].trim();
+                        clientName = parts.slice(1).join(' - ').trim();
+                    } else {
+                        clientCode = 'S/C';
+                        clientName = rawEntity;
+                    }
+                    entities.unshift({ code: clientCode, name: clientName });
+                    saveEntities();
+                }
+            } else {
+                clientName = rawEntity || med.lab;
+                clientCode = 'PROV';
             }
 
+            const prevStock = med.stock;
             if (type === 'IN') med.stock += qty;
             else med.stock -= qty;
 
@@ -1389,19 +1499,21 @@
                 operator: currentOperator,
                 medName: `${med.name} (${med.lab})`,
                 type: type,
+                entity: clientName,
+                clientCode: clientCode,
                 qty: qty,
                 unit: med.unit,
                 docRef: docRef,
                 balanceBefore: prevStock,
                 balanceAfter: med.stock,
-                notes: notes || (type === 'IN' ? 'Recepción' : 'Despacho')
+                notes: notes || (type === 'IN' ? 'Recepción' : `Despacho Pedido N° ${docRef}`)
             });
 
             saveMeds();
             saveLogs();
             closeTxModal();
             renderApp();
-            showToast(`Stock actualizado: ${med.stock} ${med.unit}`);
+            showToast(`Operado por ${currentOperator} | Pedido N° ${docRef}`);
         }
 
         function openProductHistoryModal(medId) {
@@ -1428,7 +1540,6 @@
             `;
 
             const listEl = document.getElementById('productHistoryList');
-            // Filtrar movimientos por ID o por coincidencia de nombre
             const medLogs = logs.filter(l => l.medId === med.id || (l.medName && l.medName.includes(med.name)));
 
             if (medLogs.length === 0) {
@@ -1457,19 +1568,25 @@
                                 <span class="text-[11px] text-slate-400">${l.timestamp}</span>
                             </div>
 
+                            ${l.entity ? `
+                                <div class="bg-cyan-50 text-cyan-900 border border-cyan-200/80 rounded-md px-2 py-1.5 my-1 text-[11px] flex items-center justify-between">
+                                    <span class="font-semibold">🏥 ${l.clientCode && l.clientCode !== 'S/C' ? `[${l.clientCode}] ` : ''}${l.entity}</span>
+                                    <span class="text-[10px] bg-cyan-700 text-white font-mono font-bold px-1.5 py-0.5 rounded shadow-xs">
+                                        Pedido: ${l.docRef}
+                                    </span>
+                                </div>
+                            ` : ''}
+
                             <div class="flex items-center justify-between text-slate-600 text-[11px] mt-1 pt-1 border-t border-slate-200/60">
                                 <div>
-                                    <span>👤 Operó: <b class="text-slate-900 bg-white px-1.5 py-0.5 rounded border border-slate-200">${l.operator || 'Sin registrar'}</b></span>
+                                    <span>👤 Operó: <b class="text-slate-900 bg-white px-1.5 py-0.5 rounded border border-slate-200">${l.operator || 'Jony'}</b></span>
                                 </div>
                                 <div class="text-slate-500 font-mono text-[10px]">
                                     Saldo: ${l.balanceBefore} ➔ <b>${l.balanceAfter}</b>
                                 </div>
                             </div>
 
-                            <div class="text-[11px] text-slate-500 mt-1">
-                                <span>📄 Remito/Doc: <b class="text-slate-700">${l.docRef || 'S/D'}</b></span>
-                                ${l.notes ? `<span class="italic text-slate-400 ml-1.5">(${l.notes})</span>` : ''}
-                            </div>
+                            ${l.notes ? `<div class="text-[10px] text-slate-400 italic mt-0.5">Nota: ${l.notes}</div>` : ''}
                         </div>
                     `;
                 }).join('');
@@ -1482,13 +1599,119 @@
             document.getElementById('productHistoryModal').classList.add('hidden');
         }
 
+        // --- Gestión de Clientes con Código Oficial ---
+        function openManageEntitiesModal() {
+            renderManageEntitiesList();
+            document.getElementById('manageEntitiesModal').classList.remove('hidden');
+        }
+
+        function closeManageEntitiesModal() {
+            document.getElementById('manageEntitiesModal').classList.add('hidden');
+        }
+
+        function addSingleEntityWithCode() {
+            const codeInput = document.getElementById('newEntityCode');
+            const nameInput = document.getElementById('newEntityName');
+            const code = codeInput ? codeInput.value.trim() : '';
+            const name = nameInput ? nameInput.value.trim().toUpperCase() : '';
+
+            if (!name) {
+                showToast("Ingresá el nombre del cliente");
+                return;
+            }
+
+            const exists = entities.some(e => e.name === name || (code && e.code === code));
+            if (exists) {
+                showToast("Ese código o cliente ya está registrado");
+                return;
+            }
+
+            entities.unshift({ code: code || '000000', name });
+            saveEntities();
+            renderManageEntitiesList();
+            codeInput.value = '';
+            nameInput.value = '';
+            showToast(`Cliente [${code}] ${name} registrado`);
+        }
+
+        function importBulkEntitiesWithCodes() {
+            const textarea = document.getElementById('bulkEntitiesTextarea');
+            const lines = textarea.value.split('\n');
+            let addedCount = 0;
+
+            lines.forEach(line => {
+                const trimmed = line.trim();
+                if (!trimmed) return;
+
+                let code = '';
+                let name = '';
+
+                if (trimmed.includes('\t')) {
+                    const p = trimmed.split('\t');
+                    code = p[0].trim();
+                    name = p.slice(1).join(' ').trim().toUpperCase();
+                } else if (trimmed.includes(' - ')) {
+                    const p = trimmed.split(' - ');
+                    code = p[0].trim();
+                    name = p.slice(1).join(' - ').trim().toUpperCase();
+                } else {
+                    name = trimmed.toUpperCase();
+                }
+
+                if (name && !entities.some(e => e.name === name)) {
+                    entities.push({ code: code || '000000', name });
+                    addedCount++;
+                }
+            });
+
+            if (addedCount > 0) {
+                saveEntities();
+                renderManageEntitiesList();
+                textarea.value = '';
+                showToast(`¡Se importaron ${addedCount} clientes correctamente!`);
+            } else {
+                showToast("No se encontraron nuevos clientes para agregar");
+            }
+        }
+
+        function deleteEntity(code, name) {
+            entities = entities.filter(e => !(e.name === name && e.code === code));
+            saveEntities();
+            renderManageEntitiesList();
+            showToast("Cliente eliminado del catálogo");
+        }
+
+        function renderManageEntitiesList() {
+            const container = document.getElementById('entitiesListContainer');
+            const badge = document.getElementById('entitiesCountBadge');
+            if (badge) badge.innerText = entities.length;
+            if (!container) return;
+
+            if (entities.length === 0) {
+                container.innerHTML = `<div class="p-4 text-center text-xs text-slate-400">No hay clientes registrados todavía.</div>`;
+                return;
+            }
+
+            container.innerHTML = entities.map(ent => `
+                <div class="flex items-center justify-between p-2.5 hover:bg-slate-50 transition text-xs">
+                    <div class="flex items-center gap-2">
+                        <span class="font-mono font-bold bg-cyan-100 text-cyan-800 px-1.5 py-0.5 rounded text-[11px]">${ent.code || 'S/C'}</span>
+                        <span class="font-bold text-slate-800">🏥 ${ent.name}</span>
+                    </div>
+                    <button onclick="deleteEntity('${ent.code}', '${ent.name}')" class="p-1 text-slate-400 hover:text-rose-600 rounded transition" title="Eliminar">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                    </button>
+                </div>
+            `).join('');
+        }
+
         function openNewMedModal() {
             document.getElementById('medModalTitle').innerText = 'Nuevo Fármaco Psicotrópico';
             document.getElementById('medFormId').value = '';
             document.getElementById('medName').value = '';
             document.getElementById('medDrug').value = '';
             document.getElementById('medBarcode').value = '';
-            document.getElementById('medLocation').value = 'Estante A';
+            document.getElementById('medLocation').value = 'P5-B3-N3';
             document.getElementById('medBatch').value = '';
             document.getElementById('medExpiry').value = '';
             document.getElementById('medStock').value = '0';
@@ -1531,7 +1754,7 @@
             const pres = document.getElementById('medPresentation').value;
             const unitSelect = document.getElementById('medUnit');
             if (pres === 'Cajas estuchadas') unitSelect.value = 'Cajas';
-            else if (pres === 'Blisters sueltos') unitSelect.value = 'Blisters';
+            else if (pres === 'Blisters sueltos') unitSelect.value = 'BLT';
             else if (pres === 'Ampollas') unitSelect.value = 'Ampollas';
         }
 
@@ -1641,44 +1864,87 @@
             renderManageLabsList();
         }
 
-        function openCloudModal() {
-            document.getElementById('cloudModal').classList.remove('hidden');
-        }
-
-        function closeCloudModal() {
-            document.getElementById('cloudModal').classList.add('hidden');
-        }
-
         function toggleAuditDrawer(show) {
             const drawer = document.getElementById('auditDrawer');
-            if (show) drawer.classList.remove('hidden');
-            else drawer.classList.add('hidden');
+            if (show) {
+                drawer.classList.remove('hidden');
+                renderAuditLogs();
+                setTimeout(() => {
+                    const search = document.getElementById('auditSearchInput');
+                    if (search) search.focus();
+                }, 100);
+            } else {
+                drawer.classList.add('hidden');
+            }
         }
 
         function renderAuditLogs() {
             const container = document.getElementById('auditLogContainer');
             if (!container) return;
-            if (logs.length === 0) {
-                container.innerHTML = `<p class="text-xs text-slate-400 text-center py-6">No hay registros aún.</p>`;
+
+            const query = (document.getElementById('auditSearchInput')?.value || '').toLowerCase().trim();
+
+            const filteredLogs = logs.filter(l => {
+                if (!query) return true;
+                const matchMed = (l.medName || '').toLowerCase().includes(query);
+                const matchDoc = (l.docRef || '').toLowerCase().includes(query);
+                const matchClient = (l.entity || '').toLowerCase().includes(query);
+                const matchCode = (l.clientCode || '').toLowerCase().includes(query);
+                const matchOp = (l.operator || '').toLowerCase().includes(query);
+                const matchNotes = (l.notes || '').toLowerCase().includes(query);
+
+                return matchMed || matchDoc || matchClient || matchCode || matchOp || matchNotes;
+            });
+
+            if (filteredLogs.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-8 text-slate-400 text-xs">
+                        <p class="font-bold text-slate-600">No se encontraron movimientos</p>
+                        <p class="mt-1">Probá buscando con otro número de pedido o código de cliente.</p>
+                    </div>
+                `;
                 return;
             }
-            container.innerHTML = logs.map(l => `
-                <div class="p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs space-y-0.5">
-                    <div class="flex items-center justify-between">
-                        <span class="font-bold text-slate-800">${l.medName}</span>
-                        <span class="text-[9px] font-bold px-1.5 py-0.2 rounded-full ${l.type === 'IN' ? 'bg-emerald-100 text-emerald-800' : l.type === 'OUT' ? 'bg-rose-100 text-rose-800' : 'bg-indigo-100 text-indigo-800'}">
-                            ${l.type === 'IN' ? '+ INGRESO' : l.type === 'OUT' ? '- EGRESO' : '📋 RECUENTO'}
-                        </span>
+
+            container.innerHTML = filteredLogs.map(l => {
+                const isOut = l.type === 'OUT';
+                const isIn = l.type === 'IN';
+
+                return `
+                    <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs space-y-1.5 shadow-xs">
+                        <div class="flex items-center justify-between">
+                            <span class="font-bold text-slate-900">${l.medName}</span>
+                            <span class="text-[9px] font-black px-2 py-0.5 rounded-full ${isIn ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' : isOut ? 'bg-rose-100 text-rose-800 border border-rose-200' : 'bg-indigo-100 text-indigo-800 border border-indigo-200'}">
+                                ${isIn ? '+ INGRESO' : isOut ? '- EGRESO' : '📋 RECUENTO'}
+                            </span>
+                        </div>
+
+                        ${l.entity ? `
+                            <div class="flex items-center justify-between text-[11px] bg-white border border-slate-200 rounded-lg p-2 font-medium text-cyan-950 shadow-2xs">
+                                <div class="flex items-center gap-1.5">
+                                    ${l.clientCode && l.clientCode !== 'S/C' && l.clientCode !== 'PROV' && l.clientCode !== 'INT' ? `
+                                        <span class="font-mono font-bold bg-cyan-100 text-cyan-800 px-1 py-0.2 rounded text-[10px]">${l.clientCode}</span>
+                                    ` : ''}
+                                    <span class="font-bold">🏥 ${l.entity}</span>
+                                </div>
+                                <div class="text-right">
+                                    <span class="text-[9px] text-slate-400 uppercase block font-semibold">Pedido N°</span>
+                                    <span class="font-mono text-xs font-black text-slate-900 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">${l.docRef}</span>
+                                </div>
+                            </div>
+                        ` : ''}
+
+                        <div class="flex items-center justify-between text-slate-600 text-[11px] pt-0.5">
+                            <span>Cantidad: <b class="text-slate-900">${l.qty} ${l.unit || ''}</b> (Saldo: ${l.balanceBefore} ➔ ${l.balanceAfter})</span>
+                            <span class="text-[10px] text-slate-400 font-mono">${l.timestamp}</span>
+                        </div>
+
+                        <div class="flex items-center justify-between text-[10px] text-slate-500 pt-1 border-t border-slate-200/60">
+                            <span>👤 Operó: <b class="text-slate-800">${l.operator || 'Jony'}</b> ${l.notes ? `| ${l.notes}` : ''}</span>
+                        </div>
                     </div>
-                    <div class="flex items-center justify-between text-slate-600 text-[11px]">
-                        <span>Cant: <b>${l.qty} ${l.unit || ''}</b> (Saldo: ${l.balanceBefore} ➔ ${l.balanceAfter})</span>
-                        <span class="text-[10px] text-slate-400">${l.timestamp}</span>
-                    </div>
-                    <div class="text-[10px] text-slate-500">
-                        <span>👤 <b>${l.operator || 'Sin registrar'}</b> | Doc: ${l.docRef} | ${l.notes}</span>
-                    </div>
-                </div>
-            `).join('');
+                `;
+            }).join('');
         }
 
         function showToast(msg) {
