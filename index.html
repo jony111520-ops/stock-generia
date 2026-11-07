@@ -793,21 +793,72 @@
         const DEFAULT_LABS = ["Vannier", "Biotenk", "Denver", "Rospaw", "Savant"];
         const DEFAULT_OPERATORS = ["Jony", "Javi", "Nestor", "Ceci", "Anyerson"];
 
-        // Catálogo oficial de proveedores de Droguería Generia (RalPharma)
+        // Catálogo oficial de proveedores de Droguería Generia (RalPharma) extraído del sistema
         const DEFAULT_SUPPLIERS = [
-            { code: "000001", name: "LABORATORIOS VANNIER S.A." },
-            { code: "000002", name: "LABORATORIOS BIOTENK S.A." },
-            { code: "000003", name: "DENVER FARMA S.A." },
-            { code: "000004", name: "LABORATORIOS ROSPAW S.R.L." },
-            { code: "000005", name: "SAVANT PHARM S.A." },
-            { code: "000008", name: "LABORATORIOS CRAVERI S.A.I.C." },
-            { code: "000010", name: "LABORATORIOS CASASCO S.A.I.C." },
-            { code: "000012", name: "BALIARDA S.A." },
-            { code: "000015", name: "GADOR S.A." },
-            { code: "000018", name: "LABORATORIOS BAGO S.A." },
-            { code: "000020", name: "ROEMMERS S.A.I.C.F." },
-            { code: "000025", name: "DISTRIBUIDORA DISVAL S.A." },
-            { code: "000028", name: "COFALOZA COOPERATIVA" }
+            { code: "250", name: "BIOCELL S.R.L." },
+            { code: "176", name: "BIOTENK S.A." },
+            { code: "211", name: "CASSARA S.A. Y CIA. S.A." },
+            { code: "15018", name: "DALLAS LABORATORIOS" },
+            { code: "4", name: "DENVER FARMA S.A." },
+            { code: "28", name: "DI-SI FARMA S.A." },
+            { code: "212", name: "DONATO ZURLO Y CIA S.R.L." },
+            { code: "69", name: "DRUG PACK S.A." },
+            { code: "423", name: "DROGUERIA 20 DE JUNIO" },
+            { code: "15008", name: "DROGUERIA DE LAS SIERRAS S.A." },
+            { code: "207", name: "DROGUERIA EMILIFARMA" },
+            { code: "455", name: "DROGUERIA FAMILY S.A." },
+            { code: "243", name: "DROGUERIA GARZON S.A." },
+            { code: "15010", name: "DROGUERIA JALDEN" },
+            { code: "15017", name: "DROGUERIA JAVIFARMA SRL" },
+            { code: "15011", name: "DROGUERIA JOSAR S.R.L." },
+            { code: "431", name: "DROGUERIA KILFFARM S.A." },
+            { code: "1501", name: "DROGUERIA MACROFARMA (DISTRIFARMA SRL)" },
+            { code: "15001", name: "DROGUERIA NOVARFAR" },
+            { code: "244", name: "DROGUERIA POMPEYA" },
+            { code: "15015", name: "DROGUERIA SOLIS S.A." },
+            { code: "15019", name: "DROGUERIA URUGUAY SRL" },
+            { code: "242", name: "DROGUERIA VIA BAROCHO S.A." },
+            { code: "2", name: "DUPOM" },
+            { code: "15009", name: "ERGON FARMA S.R.L." },
+            { code: "15006", name: "FARALINK" },
+            { code: "201", name: "FERRER FARMA" },
+            { code: "203", name: "Farmadent SA" },
+            { code: "228", name: "GENERICOS SAN NICOLAS S.R.L." },
+            { code: "205", name: "GLOBAL FARMA S.A." },
+            { code: "15007", name: "GLOBAL MEDICA SRL" },
+            { code: "48", name: "IQA" },
+            { code: "1", name: "KLONAL S.R.L." },
+            { code: "213", name: "LABORATORIO CELTIC S.A." },
+            { code: "19", name: "LABORATORIO DUZAC PHARMA S.A." },
+            { code: "253", name: "LABORATORIO OMICRON" },
+            { code: "15003", name: "LABORATORIO SAINT JULIEN" },
+            { code: "9", name: "LABORATORIO VANNIER S.A." },
+            { code: "241", name: "LABORATORIOS CETUS S.R.L." },
+            { code: "12", name: "LABORATORIOS DUNCAN S.A." },
+            { code: "15007", name: "LABORATORIOS MIREX" },
+            { code: "229", name: "LABORATORIOS PUNTANOS S.E." },
+            { code: "18", name: "LABORATORIOS RICHET S.A." },
+            { code: "172", name: "LABORATORIOS VIA MARIS SA" },
+            { code: "187", name: "Laboratorios Yovsol SRL" },
+            { code: "73", name: "LAFEDAR S.A." },
+            { code: "1501", name: "LOGIFARMA S.R.L." },
+            { code: "15002", name: "LOVALDO SRL" },
+            { code: "15016", name: "MACROFARMA S.A. - TUCUMAN" },
+            { code: "1501", name: "MATRIZ SUD" },
+            { code: "17", name: "MICROULES ARGENTINA S.A." },
+            { code: "22", name: "MONTE VERDE S.A. - TANGO" },
+            { code: "444", name: "NEW PHARMA S.A." },
+            { code: "202", name: "NUBEN FARMA" },
+            { code: "208", name: "OMKAR" },
+            { code: "16", name: "PHARMA GEN S.A." },
+            { code: "221", name: "PHARMAMED S.A." },
+            { code: "214", name: "RAMPITFARMA S.R.L." },
+            { code: "217", name: "REMMET LABORATORIOS SA" },
+            { code: "101", name: "ROSPAW SRL" },
+            { code: "55", name: "SAVANT PHARM S.A." },
+            { code: "65", name: "SOLCTRA SA" },
+            { code: "1503", name: "SURX ARGENTINA S.A." },
+            { code: "14", name: "TEVA PHARMA SA" }
         ];
 
         // Catálogo oficial de clientes de RalPharma
@@ -901,7 +952,9 @@
                 entities = storedEntities ? JSON.parse(storedEntities) : [...DEFAULT_ENTITIES];
 
                 const storedSuppliers = localStorage.getItem(STORAGE_KEY_SUPPLIERS);
-                suppliers = storedSuppliers ? JSON.parse(storedSuppliers) : [...DEFAULT_SUPPLIERS];
+                // Si ya había proveedores guardados previamente con códigos anteriores, actualizamos al catálogo oficial
+                suppliers = (storedSuppliers && JSON.parse(storedSuppliers).length > 20) ? JSON.parse(storedSuppliers) : [...DEFAULT_SUPPLIERS];
+                localStorage.setItem(STORAGE_KEY_SUPPLIERS, JSON.stringify(suppliers));
                 
                 const storedLogs = localStorage.getItem(STORAGE_KEY_LOGS);
                 logs = storedLogs ? JSON.parse(storedLogs) : [];
