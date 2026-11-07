@@ -27,66 +27,98 @@
 </head>
 <body class="bg-slate-100 text-slate-800 antialiased min-h-screen flex flex-col">
 
-    <!-- Top Header Clásico, Compacto y Sin Trabas -->
+    <!-- Top Header Organizado, Cómodo y con Espacio -->
     <header class="bg-slate-900 text-white border-b border-slate-800 sticky top-0 z-30 shadow-md">
-        <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-2.5 sm:py-3 flex flex-wrap md:flex-nowrap justify-between items-center gap-2 sm:gap-3">
-            
-            <!-- Branding + Selector Simple de Usuario -->
-            <div class="flex items-center gap-2.5 sm:gap-3 flex-wrap sm:flex-nowrap">
-                <div class="flex items-center gap-2">
+        <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-2.5">
+            <!-- Fila 1: Identidad Droguería Generia & Selector de Operador -->
+            <div class="flex items-center justify-between gap-3 pb-2 border-b border-slate-800/80">
+                <div class="flex items-center gap-2.5">
                     <div class="bg-emerald-500 text-slate-950 p-1.5 sm:p-2 rounded-xl flex items-center justify-center font-black shadow-sm shrink-0">
-                        <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
                         </svg>
                     </div>
-                    <div class="leading-tight">
-                        <h1 class="font-bold text-base sm:text-lg leading-tight tracking-tight">Droguería Generia</h1>
-                        <span id="cloudStatusBadge" class="inline-flex items-center gap-1 text-[10px] sm:text-[11px] font-medium text-amber-300 bg-amber-500/10 border border-amber-500/20 px-1.5 py-0.2 rounded-full">
-                            <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
-                            <span>Memoria Local</span>
-                        </span>
+                    <div>
+                        <h1 class="font-bold text-sm sm:text-base leading-tight tracking-tight">Droguería Generia</h1>
+                        <div class="flex items-center gap-2 mt-0.5">
+                            <span id="cloudStatusBadge" class="inline-flex items-center gap-1 text-[10px] font-medium text-amber-300 bg-amber-500/10 border border-amber-500/20 px-1.5 py-0.2 rounded-full">
+                                <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
+                                <span>Memoria Local</span>
+                            </span>
+                            <span class="text-[10px] text-slate-400 hidden sm:inline">Depósito Psicotrópicos</span>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Selector Ágil de Usuario (Directo, sin popups molestos) -->
-                <div class="flex items-center bg-slate-800 border border-slate-700 rounded-lg px-2 py-1 gap-1.5 shadow-sm">
+                <!-- Selector de Operador Limpio y Cómodo -->
+                <div class="flex items-center bg-slate-800 border border-slate-700 rounded-xl px-2.5 py-1.5 gap-1.5 shadow-sm relative z-40">
                     <span class="text-xs">👤</span>
                     <select id="activeOperatorSelect" onchange="changeOperator(this.value)" class="bg-transparent text-white text-xs font-bold focus:outline-none cursor-pointer">
                     </select>
                 </div>
             </div>
 
-            <!-- Botones de Acción -->
-            <div class="flex items-center gap-1.5 sm:gap-2 flex-wrap justify-end">
+            <!-- Fila 2: Botones de Acción (Directos y sin duplicados) -->
+            <div class="flex items-center justify-end gap-1.5 sm:gap-2 pt-2 flex-wrap relative">
+                <!-- Botón Ingreso de Mercadería por Remito -->
+                <button onclick="openBatchInflowModal()" class="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold shadow-sm transition">
+                    <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                    <span>📥 Ingreso Remito</span>
+                </button>
+
                 <!-- Botón Escáner -->
-                <button onclick="openScannerModal()" class="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 bg-sky-600 hover:bg-sky-500 text-white rounded-lg text-xs font-bold shadow-sm transition">
+                <button onclick="openScannerModal()" class="flex items-center gap-1.5 px-3 py-1.5 bg-sky-600 hover:bg-sky-500 text-white rounded-lg text-xs font-bold shadow-sm transition">
                     <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path></svg>
                     <span>Escanear</span>
                 </button>
 
-                <!-- Botón Clientes Oficiales -->
-                <button onclick="openManageEntitiesModal()" class="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 bg-cyan-700 hover:bg-cyan-600 text-white rounded-lg text-xs font-bold shadow-sm transition">
-                    <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
-                    <span>Clientes</span>
-                </button>
-
-                <!-- Botón Ventas Vencimientos -->
-                <button onclick="openExpiryReportModal()" class="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 bg-amber-600 hover:bg-amber-500 text-white rounded-lg text-xs font-bold shadow-sm transition">
-                    <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                    <span>Ventas</span>
-                </button>
-
                 <!-- Botón Nuevo Fármaco -->
-                <button onclick="openNewMedModal()" class="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-semibold shadow-sm transition">
-                    <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"></path></svg>
+                <button onclick="openNewMedModal()" class="flex items-center gap-1.5 px-3 py-1.5 bg-teal-600 hover:bg-teal-500 text-white rounded-lg text-xs font-bold shadow-sm transition">
+                    <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
                     <span>+ Fármaco</span>
                 </button>
 
-                <!-- Botón Libro de Actas & Búsqueda de Pedidos -->
-                <button onclick="toggleAuditDrawer(true)" class="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 sm:py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-xs font-semibold border border-slate-700 transition">
+                <!-- Botón Libro de Actas & Pedidos -->
+                <button onclick="toggleAuditDrawer(true)" class="flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-xs font-semibold border border-slate-700 transition">
                     <svg class="w-4 h-4 text-emerald-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
                     <span>Actas & Pedidos</span>
                 </button>
+
+                <!-- Menú Desplegable "⚙️ Más" (Flotante hacia abajo sin scrollear) -->
+                <div class="relative inline-block text-left">
+                    <button id="btnMoreMenu" onclick="toggleMoreMenu(event)" class="flex items-center gap-1 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-xs font-bold border border-slate-700 shadow-sm transition">
+                        <span>⚙️ Más</span>
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </button>
+
+                    <!-- Popover Flotante -->
+                    <div id="moreDropdownPanel" class="hidden absolute right-0 mt-2 w-64 bg-white rounded-2xl shadow-2xl border border-slate-200 py-2 z-50 transform origin-top-right transition-all">
+                        <div class="px-3 py-1.5 border-b border-slate-100 text-[10px] font-black uppercase tracking-wider text-slate-400">
+                            Herramientas Especiales
+                        </div>
+                        <button onclick="openPackingCheckModal(); closeMoreMenu();" class="w-full text-left px-3 py-2.5 text-xs text-slate-700 hover:bg-slate-50 flex items-center gap-2.5 transition">
+                            <span class="p-1.5 bg-indigo-50 text-indigo-600 rounded-lg text-sm">📦</span>
+                            <div>
+                                <span class="font-bold text-slate-900 block">Packing Check</span>
+                                <span class="text-[10px] text-slate-400">Verificador antierrores con cámara</span>
+                            </div>
+                        </button>
+                        <button onclick="openManageEntitiesModal(); closeMoreMenu();" class="w-full text-left px-3 py-2.5 text-xs text-slate-700 hover:bg-slate-50 flex items-center gap-2.5 transition">
+                            <span class="p-1.5 bg-cyan-50 text-cyan-600 rounded-lg text-sm">🏥</span>
+                            <div>
+                                <span class="font-bold text-slate-900 block">Clientes RalPharma</span>
+                                <span class="text-[10px] text-slate-400">Catálogo con códigos oficiales</span>
+                            </div>
+                        </button>
+                        <button onclick="openExpiryReportModal(); closeMoreMenu();" class="w-full text-left px-3 py-2.5 text-xs text-slate-700 hover:bg-slate-50 flex items-center gap-2.5 transition">
+                            <span class="p-1.5 bg-amber-50 text-amber-600 rounded-lg text-sm">⏳</span>
+                            <div>
+                                <span class="font-bold text-slate-900 block">Vencimientos (Ventas)</span>
+                                <span class="text-[10px] text-slate-400">Reporte para WhatsApp</span>
+                            </div>
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     </header>
@@ -177,6 +209,62 @@
         </div>
     </main>
 
+    <!-- Modal: Mesa de Entrada / Ingreso Masivo por Remito de Proveedor -->
+    <div id="batchInflowModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-2xl w-full p-5 shadow-2xl border border-slate-200 max-h-[92vh] flex flex-col">
+            <div class="flex items-start justify-between pb-3 border-b border-slate-100 mb-3">
+                <div class="flex items-center gap-2">
+                    <div class="p-2 bg-emerald-100 text-emerald-800 rounded-xl">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-bold text-slate-900">Mesa de Entrada - Ingreso por Remito</h3>
+                        <p class="text-[10px] text-slate-500">Recepción múltiple de mercadería de proveedores</p>
+                    </div>
+                </div>
+                <button onclick="closeBatchInflowModal()" class="text-slate-400 hover:text-slate-600 p-1">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+
+            <div class="space-y-3 flex-1 overflow-y-auto pr-1 custom-scrollbar text-xs">
+                <!-- Datos Generales del Remito -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 bg-slate-50 p-3 rounded-xl border border-slate-200">
+                    <div>
+                        <label class="block font-bold text-slate-700 mb-1">N° Remito de Proveedor *</label>
+                        <input type="text" id="batchDocRef" required placeholder="Ej: REM-004821" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs font-mono font-bold focus:ring-2 focus:ring-emerald-500 focus:outline-none bg-white">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-700 mb-1">Proveedor / Laboratorio Oficial *</label>
+                        <input list="suppliersDataList" id="batchSupplier" placeholder="Escribí código o nombre..." class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs font-semibold focus:ring-2 focus:ring-emerald-500 focus:outline-none bg-white">
+                    </div>
+                </div>
+
+                <!-- Renglones de Medicamentos -->
+                <div class="border-t border-slate-100 pt-2">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="font-bold text-slate-700 uppercase tracking-wider text-[11px]">Mercaderías a Ingresar:</span>
+                        <button type="button" onclick="addBatchInflowRow()" class="text-[11px] font-bold text-emerald-600 hover:underline flex items-center gap-1">
+                            <span>+ Agregar otro fármaco</span>
+                        </button>
+                    </div>
+
+                    <div id="batchRowsContainer" class="space-y-2">
+                        <!-- Filas inyectadas dinámicamente -->
+                    </div>
+                    <datalist id="batchMedsDataList"></datalist>
+                </div>
+            </div>
+
+            <div class="pt-3 border-t border-slate-100 mt-3 flex items-center justify-between">
+                <button type="button" onclick="closeBatchInflowModal()" class="px-4 py-2 border border-slate-300 text-slate-700 font-semibold rounded-lg text-xs hover:bg-slate-50 transition">Cancelar</button>
+                <button type="button" onclick="confirmBatchInflow()" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-lg text-xs transition shadow-sm">
+                    Confirmar e Ingresar Todo al Stock
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal: Barcode Camera Scanner -->
     <div id="scannerModal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-md w-full p-5 shadow-2xl border border-slate-200">
@@ -222,6 +310,57 @@
             <div class="mt-3 flex justify-between items-center text-xs">
                 <span class="text-slate-400 text-[10px]">Lee EAN-13, Datamatrix y QR</span>
                 <button onclick="closeScannerModal()" class="px-3 py-1.5 border border-slate-300 text-slate-700 font-semibold rounded-lg hover:bg-slate-100 transition">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Packing Check (Verificador Antierrores para Embalaje) -->
+    <div id="packingCheckModal" class="fixed inset-0 bg-slate-900/75 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-lg w-full p-5 shadow-2xl border border-slate-200 max-h-[92vh] flex flex-col">
+            <div class="flex items-start justify-between pb-3 border-b border-slate-100 mb-3">
+                <div class="flex items-center gap-2">
+                    <div class="p-1.5 bg-indigo-100 text-indigo-700 rounded-lg">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-bold text-slate-900">📦 Packing Check de Pedido</h3>
+                        <p class="text-[10px] text-slate-500">Verificador antierrores antes de cerrar la caja de despacho</p>
+                    </div>
+                </div>
+                <button onclick="closePackingCheckModal()" class="text-slate-400 hover:text-slate-600 p-1">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+
+            <div class="space-y-3 flex-1 overflow-y-auto pr-1 custom-scrollbar text-xs">
+                <div class="grid grid-cols-2 gap-2 bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+                    <div>
+                        <label class="block font-bold text-slate-700 text-[11px] mb-1">N° Pedido de Venta</label>
+                        <input type="text" id="packingOrderRef" placeholder="Ej: 00085255" class="w-full px-2.5 py-1.5 border border-slate-300 rounded-lg text-xs font-mono font-bold focus:ring-2 focus:ring-indigo-500 focus:outline-none bg-white">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-700 text-[11px] mb-1">Farmacia Destino</label>
+                        <input list="entitiesDataList" id="packingClientRef" placeholder="Farmacia..." class="w-full px-2.5 py-1.5 border border-slate-300 rounded-lg text-xs font-semibold focus:ring-2 focus:ring-indigo-500 focus:outline-none bg-white">
+                    </div>
+                </div>
+
+                <!-- Lista de verificación -->
+                <div>
+                    <div class="flex items-center justify-between mb-1.5">
+                        <span class="font-bold text-slate-700 uppercase tracking-wider text-[10px]">Cajas en este pedido:</span>
+                        <button onclick="addPackingItemRow()" class="text-indigo-600 font-bold text-[11px] hover:underline">+ Agregar Fármaco</button>
+                    </div>
+                    <div id="packingItemsList" class="space-y-2"></div>
+                </div>
+
+                <div id="packingAlertBox" class="hidden p-2.5 rounded-xl text-xs font-bold"></div>
+            </div>
+
+            <div class="pt-3 border-t border-slate-100 mt-3 flex items-center justify-between">
+                <button onclick="closePackingCheckModal()" class="px-3 py-1.5 border border-slate-300 text-slate-700 font-semibold rounded-lg text-xs hover:bg-slate-50 transition">Cerrar</button>
+                <button onclick="finalizePackingOrder()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-lg text-xs transition shadow-sm">
+                    ✔️ Confirmar y Despachar Pedido
+                </button>
             </div>
         </div>
     </div>
@@ -273,6 +412,15 @@
                 </button>
             </div>
 
+            <!-- Alerta FEFO para Egreso -->
+            <div id="txFefoAlert" class="hidden mb-3 p-2.5 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-900 flex items-start gap-2">
+                <span class="text-base">⏳</span>
+                <div>
+                    <span class="font-bold block">Prioridad de Salida FEFO</span>
+                    <span id="txFefoAlertText" class="text-[11px] leading-tight block text-amber-800"></span>
+                </div>
+            </div>
+
             <form id="txForm" onsubmit="submitTransaction(event)" class="space-y-3.5">
                 <input type="hidden" id="txMedId">
                 <input type="hidden" id="txType">
@@ -294,10 +442,9 @@
                         <label id="txEntityLabel" class="block text-xs font-bold text-slate-700">Cliente / Farmacia / Entidad *</label>
                         <button type="button" onclick="openManageEntitiesModal()" class="text-[10px] text-cyan-600 font-bold hover:underline">+ Gestionar Clientes</button>
                     </div>
-                    <input list="entitiesDataList" id="txEntity" placeholder="Escribí código o nombre (Ej: 005992 o VACCAREZZA)" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs font-semibold text-slate-900 focus:ring-2 focus:ring-cyan-500 focus:outline-none bg-white">
-                    <datalist id="entitiesDataList">
-                        <!-- Clientes con código y nombre -->
-                    </datalist>
+                    <input list="entitiesDataList" id="txEntity" placeholder="Escribí código o nombre..." class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs font-semibold text-slate-900 focus:ring-2 focus:ring-cyan-500 focus:outline-none bg-white">
+                    <datalist id="entitiesDataList"></datalist>
+                    <datalist id="suppliersDataList"></datalist>
                 </div>
 
                 <div class="grid grid-cols-2 gap-2">
@@ -423,7 +570,7 @@
                         <label class="block font-bold text-slate-700 mb-1">Unidad</label>
                         <select id="medUnit" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none">
                             <option value="Cajas">Cajas</option>
-                            <option value="Blisters">Blisters</option>
+                            <option value="BLT">BLT (Blisters)</option>
                             <option value="Ampollas">Ampollas</option>
                         </select>
                     </div>
@@ -593,19 +740,24 @@
             <div class="p-4 bg-slate-900 text-white flex items-center justify-between border-b border-slate-800">
                 <div>
                     <h3 class="font-bold text-sm">Libro de Entradas y Salidas</h3>
-                    <p class="text-xs text-slate-400">Rastreador de N° Pedido de Venta, Clientes y Operadores</p>
+                    <p class="text-xs text-slate-400">Rastreador de N° Pedido de Venta, Remitos y Operadores</p>
                 </div>
                 <button onclick="toggleAuditDrawer(false)" class="text-slate-400 hover:text-white p-1">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                 </button>
             </div>
 
-            <!-- Buscador Dinámico en el Libro de Actas -->
-            <div class="p-3 bg-slate-100 border-b border-slate-200">
-                <div class="relative">
+            <!-- Buscador Dinámico & Papelera de Puesta a Cero -->
+            <div class="p-3 bg-slate-100 border-b border-slate-200 flex items-center gap-2">
+                <div class="relative flex-1">
                     <svg class="w-4 h-4 absolute left-3 top-2.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                    <input type="text" id="auditSearchInput" oninput="renderAuditLogs()" placeholder="🔍 Buscar por N° Pedido (ej: 00085255), código o cliente..." class="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-lg text-xs font-semibold text-slate-800 focus:ring-2 focus:ring-cyan-500 focus:outline-none bg-white">
+                    <input type="text" id="auditSearchInput" oninput="renderAuditLogs()" placeholder="🔍 Buscar por N° Pedido, Remito, código o cliente..." class="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-lg text-xs font-semibold text-slate-800 focus:ring-2 focus:ring-cyan-500 focus:outline-none bg-white">
                 </div>
+                <!-- Botón Papelera para inicio oficial -->
+                <button onclick="resetAuditLogsConfirm()" title="Poner a cero historial para inicio oficial" class="p-2 text-rose-600 hover:text-rose-700 hover:bg-rose-100 rounded-lg border border-rose-200 transition bg-white flex items-center gap-1 shrink-0 text-xs font-bold">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                    <span class="hidden sm:inline">Poner a Cero</span>
+                </button>
             </div>
 
             <div id="auditLogContainer" class="flex-1 overflow-y-auto p-4 space-y-2.5 custom-scrollbar">
@@ -626,6 +778,7 @@
         const STORAGE_KEY_OPERATOR = 'generia_stock_operator';
         const STORAGE_KEY_OPERATORS_LIST = 'generia_stock_operators_list';
         const STORAGE_KEY_ENTITIES = 'generia_stock_entities_v2';
+        const STORAGE_KEY_SUPPLIERS = 'generia_stock_suppliers_v2';
 
         const DEFAULT_FIREBASE_CONFIG = {
             apiKey: "AIzaSyCmw9QnIDNiofWhs-6QuglxcJHtshYYOQk",
@@ -640,7 +793,24 @@
         const DEFAULT_LABS = ["Vannier", "Biotenk", "Denver", "Rospaw", "Savant"];
         const DEFAULT_OPERATORS = ["Jony", "Javi", "Nestor", "Ceci", "Anyerson"];
 
-        // Catálogo oficial de clientes reales de RalPharma
+        // Catálogo oficial de proveedores de Droguería Generia (RalPharma)
+        const DEFAULT_SUPPLIERS = [
+            { code: "000001", name: "LABORATORIOS VANNIER S.A." },
+            { code: "000002", name: "LABORATORIOS BIOTENK S.A." },
+            { code: "000003", name: "DENVER FARMA S.A." },
+            { code: "000004", name: "LABORATORIOS ROSPAW S.R.L." },
+            { code: "000005", name: "SAVANT PHARM S.A." },
+            { code: "000008", name: "LABORATORIOS CRAVERI S.A.I.C." },
+            { code: "000010", name: "LABORATORIOS CASASCO S.A.I.C." },
+            { code: "000012", name: "BALIARDA S.A." },
+            { code: "000015", name: "GADOR S.A." },
+            { code: "000018", name: "LABORATORIOS BAGO S.A." },
+            { code: "000020", name: "ROEMMERS S.A.I.C.F." },
+            { code: "000025", name: "DISTRIBUIDORA DISVAL S.A." },
+            { code: "000028", name: "COFALOZA COOPERATIVA" }
+        ];
+
+        // Catálogo oficial de clientes de RalPharma
         const DEFAULT_ENTITIES = [
             { code: "005992", name: "FCIA. VACCAREZZA - PIVA EDUARDO" },
             { code: "002002", name: "FCIA. PAZOS FRANCISCO" },
@@ -675,15 +845,18 @@
         let medications = [];
         let laboratories = [];
         let entities = [];
+        let suppliers = [];
         let logs = [];
         let knownOperators = [...DEFAULT_OPERATORS];
-        let currentOperator = "Jony"; // Por defecto arranca en Jony o el guardado
+        let currentOperator = "Jony";
         let selectedLabFilter = 'ALL';
 
         let appHtml5QrCode = null;
         let isAppScannerActive = false;
         let lastScannedMedId = null;
         let scanTargetInput = null;
+
+        let packingItems = [];
 
         let db = null;
         let unsubscribeMeds = null;
@@ -696,7 +869,25 @@
             loadInitialData();
             connectFirebase();
             renderApp();
+            document.addEventListener('click', (e) => {
+                const btn = document.getElementById('btnMoreMenu');
+                const panel = document.getElementById('moreDropdownPanel');
+                if (btn && panel && !btn.contains(e.target) && !panel.contains(e.target)) {
+                    panel.classList.add('hidden');
+                }
+            });
         });
+
+        function toggleMoreMenu(e) {
+            e.stopPropagation();
+            const panel = document.getElementById('moreDropdownPanel');
+            if (panel) panel.classList.toggle('hidden');
+        }
+
+        function closeMoreMenu() {
+            const panel = document.getElementById('moreDropdownPanel');
+            if (panel) panel.classList.add('hidden');
+        }
 
         function loadInitialData() {
             try {
@@ -707,12 +898,10 @@
                 medications = storedMeds ? JSON.parse(storedMeds) : [...DEFAULT_MEDS];
 
                 const storedEntities = localStorage.getItem(STORAGE_KEY_ENTITIES);
-                if (storedEntities) {
-                    const parsed = JSON.parse(storedEntities);
-                    entities = parsed.map(item => (typeof item === 'string') ? { code: '000000', name: item } : item);
-                } else {
-                    entities = [...DEFAULT_ENTITIES];
-                }
+                entities = storedEntities ? JSON.parse(storedEntities) : [...DEFAULT_ENTITIES];
+
+                const storedSuppliers = localStorage.getItem(STORAGE_KEY_SUPPLIERS);
+                suppliers = storedSuppliers ? JSON.parse(storedSuppliers) : [...DEFAULT_SUPPLIERS];
                 
                 const storedLogs = localStorage.getItem(STORAGE_KEY_LOGS);
                 logs = storedLogs ? JSON.parse(storedLogs) : [];
@@ -730,15 +919,18 @@
                 currentOperator = localStorage.getItem(STORAGE_KEY_OPERATOR) || "Jony";
                 renderOperatorSelect();
                 populateEntitiesDatalist();
+                populateSuppliersDatalist();
             } catch (e) {
                 laboratories = [...DEFAULT_LABS];
                 medications = [...DEFAULT_MEDS];
                 entities = [...DEFAULT_ENTITIES];
+                suppliers = [...DEFAULT_SUPPLIERS];
                 logs = [];
                 knownOperators = [...DEFAULT_OPERATORS];
                 currentOperator = "Jony";
                 renderOperatorSelect();
                 populateEntitiesDatalist();
+                populateSuppliersDatalist();
             }
         }
 
@@ -751,6 +943,14 @@
             
             const badge = document.getElementById('entitiesCountBadge');
             if (badge) badge.innerText = entities.length;
+        }
+
+        function populateSuppliersDatalist() {
+            const datalist = document.getElementById('suppliersDataList');
+            if (!datalist) return;
+            datalist.innerHTML = suppliers.map(sup => `
+                <option value="${sup.code} - ${sup.name}">${sup.name}</option>
+            `).join('');
         }
 
         function renderOperatorSelect() {
@@ -1216,7 +1416,7 @@
             if (matched) {
                 lastScannedMedId = matched.id;
                 matchedTitle.innerText = `${matched.name} (${matched.lab})`;
-                matchedBarcode.innerText = `Código: ${decodedText} | Stock: ${matched.stock} ${med.unit}`;
+                matchedBarcode.innerText = `Código: ${decodedText} | Stock: ${matched.stock} ${matched.unit}`;
                 matchedBox.classList.remove('hidden');
             } else {
                 lastScannedMedId = null;
@@ -1252,6 +1452,356 @@
             document.getElementById('scannerModal').classList.add('hidden');
         }
 
+        // --- Mesa de Entrada: Ingreso por Remito Múltiple ---
+        function populateBatchMedsDatalist() {
+            const dl = document.getElementById('batchMedsDataList');
+            if (!dl) return;
+            dl.innerHTML = medications.map(m => `<option value="${m.name}">${m.drug} (${m.lab}) - Stock: ${m.stock} ${m.unit}</option>`).join('');
+        }
+
+        function openBatchInflowModal() {
+            document.getElementById('batchDocRef').value = '';
+            document.getElementById('batchSupplier').value = '';
+            populateBatchMedsDatalist();
+            const container = document.getElementById('batchRowsContainer');
+            container.innerHTML = '';
+            addBatchInflowRow();
+            document.getElementById('batchInflowModal').classList.remove('hidden');
+        }
+
+        function closeBatchInflowModal() {
+            document.getElementById('batchInflowModal').classList.add('hidden');
+        }
+
+        function addBatchInflowRow() {
+            populateBatchMedsDatalist();
+            const container = document.getElementById('batchRowsContainer');
+            const rowId = 'batchRow_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4);
+
+            const rowHtml = `
+                <div id="${rowId}" class="p-2.5 bg-slate-50 border border-slate-200 rounded-xl space-y-2 relative">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-1.5">
+                            <span class="text-[10px] font-bold text-slate-500 uppercase">Fármaco Recibido:</span>
+                            <span id="badge_new_${rowId}" class="hidden text-[9px] font-black uppercase tracking-wider px-1.5 py-0.2 bg-teal-100 text-teal-800 rounded border border-teal-300">
+                                ✨ Fármaco Nuevo (Se dará de alta solo)
+                            </span>
+                        </div>
+                        <button type="button" onclick="removeBatchRow('${rowId}')" class="text-rose-500 hover:text-rose-700 text-[10px] font-bold">✕ Quitar</button>
+                    </div>
+                    <input list="batchMedsDataList" oninput="checkBatchRowMedMatch('${rowId}', this.value)" placeholder="Elegí de la lista o escribí el nombre si es nuevo..." class="batch-med-input w-full px-2.5 py-1.5 border border-slate-300 rounded-lg text-xs font-semibold bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+                    <div class="grid grid-cols-4 gap-2">
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-600 mb-0.5">Cantidad</label>
+                            <input type="number" min="1" required placeholder="Cant" class="batch-qty-input w-full px-2 py-1 border border-slate-300 rounded-lg text-xs font-bold bg-white">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-600 mb-0.5">Tipo Unidad</label>
+                            <select class="batch-unit-select w-full px-1.5 py-1 border border-slate-300 rounded-lg text-xs bg-white">
+                                <option value="BLT">Blisters (Hosp.)</option>
+                                <option value="Cajas">Cajas Estuche</option>
+                                <option value="Ampollas">Ampollas</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-600 mb-0.5">Lote</label>
+                            <input type="text" placeholder="N° Lote" class="batch-lote-input w-full px-2 py-1 border border-slate-300 rounded-lg text-xs font-mono bg-white">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-600 mb-0.5">Vencimiento</label>
+                            <input type="month" class="batch-expiry-input w-full px-1.5 py-1 border border-slate-300 rounded-lg text-xs bg-white">
+                        </div>
+                    </div>
+                </div>
+            `;
+            container.insertAdjacentHTML('beforeend', rowHtml);
+        }
+
+        function checkBatchRowMedMatch(rowId, val) {
+            const clean = val.trim().toLowerCase();
+            const badge = document.getElementById(`badge_new_${rowId}`);
+            if (!badge) return;
+
+            if (!clean) {
+                badge.classList.add('hidden');
+                return;
+            }
+
+            const exists = medications.some(m => m.name.toLowerCase() === clean);
+            if (!exists) {
+                badge.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+            }
+        }
+
+        function removeBatchRow(rowId) {
+            const el = document.getElementById(rowId);
+            if (el) el.remove();
+        }
+
+        function confirmBatchInflow() {
+            const docRef = document.getElementById('batchDocRef').value.trim();
+            const rawSupplier = document.getElementById('batchSupplier').value.trim();
+
+            if (!docRef) {
+                showToast("Por favor escribí el N° de Remito del Proveedor");
+                return;
+            }
+
+            const rows = document.querySelectorAll('#batchRowsContainer > div');
+            if (rows.length === 0) {
+                showToast("Cargá al menos un medicamento en la mesa de entrada");
+                return;
+            }
+
+            let supplierName = rawSupplier || "PROVEEDOR GENERAL";
+            
+            // Deducir laboratorio a partir del proveedor si es posible
+            let defaultLab = "Vannier";
+            const upperSup = supplierName.toUpperCase();
+            if (upperSup.includes("VANNIER")) defaultLab = "Vannier";
+            else if (upperSup.includes("BIOTENK")) defaultLab = "Biotenk";
+            else if (upperSup.includes("DENVER")) defaultLab = "Denver";
+            else if (upperSup.includes("ROSPAW")) defaultLab = "Rospaw";
+            else if (upperSup.includes("SAVANT")) defaultLab = "Savant";
+            else if (laboratories.length > 0) defaultLab = laboratories[0];
+
+            let processed = 0;
+            let newlyCreated = 0;
+
+            rows.forEach(row => {
+                const medInputValue = row.querySelector('.batch-med-input')?.value.trim();
+                const qty = parseInt(row.querySelector('.batch-qty-input')?.value);
+                const unit = row.querySelector('.batch-unit-select')?.value || 'BLT';
+                const lote = row.querySelector('.batch-lote-input')?.value.trim() || '';
+                const expiry = row.querySelector('.batch-expiry-input')?.value || '';
+
+                if (medInputValue && qty > 0) {
+                    let med = medications.find(m => m.name.toLowerCase() === medInputValue.toLowerCase());
+
+                    // Si NO existe en el stock actual, se da de alta automáticamente
+                    if (!med) {
+                        const presentation = unit === 'BLT' ? 'Blisters sueltos' : unit === 'Ampollas' ? 'Ampollas' : 'Cajas estuchadas';
+                        const newDrugName = medInputValue.split(' ')[0] || medInputValue;
+
+                        med = {
+                            id: 'med-' + Date.now() + '-' + Math.random().toString(36).substr(2, 4),
+                            name: medInputValue,
+                            drug: newDrugName,
+                            lab: defaultLab,
+                            presentation: presentation,
+                            unit: unit,
+                            location: 'Recepción / P5-B3',
+                            batch: lote,
+                            expiry: expiry,
+                            stock: qty,
+                            minStock: 15,
+                            barcode: ''
+                        };
+
+                        medications.unshift(med);
+                        newlyCreated++;
+
+                        logs.unshift({
+                            id: 'log-' + Date.now() + '-' + Math.random().toString(36).substr(2, 4),
+                            medId: med.id,
+                            timestamp: new Date().toLocaleString('es-AR'),
+                            operator: currentOperator,
+                            medName: `${med.name} (${med.lab})`,
+                            type: 'IN',
+                            entity: supplierName,
+                            clientCode: 'PROV',
+                            qty: qty,
+                            unit: unit,
+                            docRef: docRef,
+                            balanceBefore: 0,
+                            balanceAfter: qty,
+                            notes: `✨ ALTA AUTOMÁTICA | Remito Proveedor | Lote: ${lote || 'S/L'} (Vto: ${expiry || 'S/F'})`
+                        });
+                        processed++;
+                    } else {
+                        // Si ya existía, suma al stock y aplica FEFO
+                        const prevStock = med.stock;
+                        med.stock += qty;
+                        med.unit = unit;
+
+                        // FEFO: Si el nuevo lote ingresado vence antes, se actualiza como prioritario
+                        if (expiry) {
+                            if (!med.expiry || expiry < med.expiry) {
+                                med.expiry = expiry;
+                                if (lote) med.batch = lote;
+                            }
+                        } else if (lote && !med.batch) {
+                            med.batch = lote;
+                        }
+
+                        logs.unshift({
+                            id: 'log-' + Date.now() + '-' + Math.random().toString(36).substr(2, 4),
+                            medId: med.id,
+                            timestamp: new Date().toLocaleString('es-AR'),
+                            operator: currentOperator,
+                            medName: `${med.name} (${med.lab})`,
+                            type: 'IN',
+                            entity: supplierName,
+                            clientCode: 'PROV',
+                            qty: qty,
+                            unit: unit,
+                            docRef: docRef,
+                            balanceBefore: prevStock,
+                            balanceAfter: med.stock,
+                            notes: `Mesa Entrada | Lote: ${lote || 'S/L'} (Vto: ${expiry || 'S/F'})`
+                        });
+                        processed++;
+                    }
+                }
+            });
+
+            if (processed > 0) {
+                saveMeds();
+                saveLogs();
+                closeBatchInflowModal();
+                renderApp();
+                let successMsg = `¡Se ingresaron ${processed} productos del Remito ${docRef}!`;
+                if (newlyCreated > 0) {
+                    successMsg += ` (${newlyCreated} producto${newlyCreated > 1 ? 's nuevos dados' : ' nuevo dado'} de alta en stock)`;
+                }
+                showToast(successMsg);
+            } else {
+                showToast("Completá el nombre del fármaco y la cantidad");
+            }
+        }
+
+        // --- Packing Check Modal Logic ---
+        function openPackingCheckModal() {
+            document.getElementById('packingOrderRef').value = '';
+            document.getElementById('packingClientRef').value = '';
+            packingItems = [];
+            renderPackingItems();
+            document.getElementById('packingCheckModal').classList.remove('hidden');
+        }
+
+        function closePackingCheckModal() {
+            document.getElementById('packingCheckModal').classList.add('hidden');
+        }
+
+        function addPackingItemRow() {
+            const med = medications[0];
+            if (!med) return;
+            packingItems.push({
+                medId: med.id,
+                name: med.name,
+                required: 10,
+                scanned: 0,
+                completed: false
+            });
+            renderPackingItems();
+        }
+
+        function renderPackingItems() {
+            const list = document.getElementById('packingItemsList');
+            if (!list) return;
+
+            if (packingItems.length === 0) {
+                list.innerHTML = `<div class="p-4 text-center text-xs text-slate-400 border border-dashed border-slate-200 rounded-xl">Tocá "+ Agregar Fármaco" para cargar los ítems del pedido a controlar.</div>`;
+                return;
+            }
+
+            list.innerHTML = packingItems.map((item, idx) => {
+                const med = medications.find(m => m.id === item.medId);
+                const isDone = item.scanned >= item.required;
+
+                return `
+                    <div class="p-3 rounded-xl border ${isDone ? 'bg-emerald-50 border-emerald-300' : 'bg-slate-50 border-slate-200'} text-xs flex items-center justify-between gap-2">
+                        <div class="flex-1">
+                            <span class="font-bold text-slate-900 block">${item.name}</span>
+                            <span class="text-[10px] text-slate-500">Lote: ${med?.batch || 'S/L'} | Ubic: ${med?.location || 'P5-B3-N3'}</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <div class="flex items-center gap-1 font-mono">
+                                <span class="font-black text-sm ${isDone ? 'text-emerald-700' : 'text-slate-800'}">${item.scanned}</span>
+                                <span class="text-slate-400">/</span>
+                                <span class="font-bold text-slate-600">${item.required}</span>
+                            </div>
+                            <button onclick="packingStepScan(${idx})" class="px-2.5 py-1 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-lg text-xs shadow-xs">
+                                +1 Bip
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function packingStepScan(idx) {
+            playBeepSound();
+            if (packingItems[idx]) {
+                packingItems[idx].scanned++;
+                if (packingItems[idx].scanned >= packingItems[idx].required) {
+                    packingItems[idx].completed = true;
+                }
+                renderPackingItems();
+            }
+        }
+
+        function finalizePackingOrder() {
+            const orderRef = document.getElementById('packingOrderRef').value.trim();
+            const clientRef = document.getElementById('packingClientRef').value.trim() || 'FARMACIA DESTINO';
+
+            if (!orderRef) {
+                showToast("Ingresá el N° de Pedido de Venta");
+                return;
+            }
+
+            if (packingItems.length === 0) {
+                showToast("No cargaste fármacos en el control de bulto");
+                return;
+            }
+
+            packingItems.forEach(item => {
+                const med = medications.find(m => m.id === item.medId);
+                if (med) {
+                    const prevStock = med.stock;
+                    med.stock -= item.scanned;
+                    logs.unshift({
+                        id: 'log-' + Date.now() + '-' + Math.random().toString(36).substr(2, 4),
+                        medId: med.id,
+                        timestamp: new Date().toLocaleString('es-AR'),
+                        operator: currentOperator,
+                        medName: `${med.name} (${med.lab})`,
+                        type: 'OUT',
+                        entity: clientRef,
+                        clientCode: 'CLI',
+                        qty: item.scanned,
+                        unit: med.unit,
+                        docRef: orderRef,
+                        balanceBefore: prevStock,
+                        balanceAfter: med.stock,
+                        notes: `Packing Check Auditado por ${currentOperator}`
+                    });
+                }
+            });
+
+            saveMeds();
+            saveLogs();
+            closePackingCheckModal();
+            renderApp();
+            showToast(`✅ Pedido ${orderRef} verificado y despachado con éxito`);
+        }
+
+        // --- Poner a Cero Historial (Solo en Actas) ---
+        function resetAuditLogsConfirm() {
+            const confirmWord = prompt("⚠️ ATENCIÓN: Esta acción borrará el historial de pruebas para iniciar formalmente la operación real de Droguería Generia.\n\nEscribí BORRAR en mayúsculas para confirmar:");
+            if (confirmWord === 'BORRAR') {
+                logs = [];
+                saveLogs();
+                renderAuditLogs();
+                showToast("Historial puesto a cero para el lanzamiento oficial");
+            } else if (confirmWord !== null) {
+                showToast("Cancelado: Palabra de seguridad incorrecta");
+            }
+        }
+
+        // --- Conteo Físico / Inventario Modal Handlers ---
         function openInventoryCountModal(medId) {
             const med = medications.find(m => m.id === medId);
             if (!med) return;
@@ -1408,6 +1958,9 @@
             const docInput = document.getElementById('txDocRef');
             const docLabel = document.getElementById('txDocLabel');
             const entityLabel = document.getElementById('txEntityLabel');
+            const fefoAlert = document.getElementById('txFefoAlert');
+            const fefoText = document.getElementById('txFefoAlertText');
+            const entityInput = document.getElementById('txEntity');
 
             if (type === 'IN') {
                 badge.className = 'text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800';
@@ -1415,9 +1968,11 @@
                 title.innerText = 'Ingreso de Psicotrópicos';
                 entityLabel.innerText = 'Proveedor / Laboratorio de Origen';
                 docLabel.innerText = 'N° Comprobante / Remito de Ingreso *';
-                docInput.placeholder = 'Ej: REM-ORIGEN-4821';
+                docInput.placeholder = 'Ej: REM-004821';
+                entityInput.setAttribute('list', 'suppliersDataList');
                 submitBtn.className = 'w-1/2 py-2 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition';
                 submitBtn.innerText = 'Confirmar Ingreso';
+                fefoAlert.classList.add('hidden');
             } else {
                 badge.className = 'text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-rose-100 text-rose-800';
                 badge.innerText = 'EGRESO / DESPACHO';
@@ -1425,8 +1980,17 @@
                 entityLabel.innerText = 'Cliente / Farmacia / Entidad *';
                 docLabel.innerText = 'N° Pedido de Venta *';
                 docInput.placeholder = 'Ej: 00085255';
+                entityInput.setAttribute('list', 'entitiesDataList');
                 submitBtn.className = 'w-1/2 py-2 px-3 rounded-lg bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold transition';
                 submitBtn.innerText = 'Confirmar Egreso';
+
+                // Mostrar alerta FEFO con lote sugerido
+                if (med.batch && med.expiry) {
+                    fefoText.innerText = `Despachar primero Lote: ${med.batch} (Vence: ${med.expiry}) ubicado en ${med.location}`;
+                    fefoAlert.classList.remove('hidden');
+                } else {
+                    fefoAlert.classList.add('hidden');
+                }
             }
 
             document.getElementById('txModal').classList.remove('hidden');
@@ -1462,7 +2026,6 @@
                     return;
                 }
 
-                // Autodetectar código si coincide o registrar nuevo
                 const matchedEntity = entities.find(e => 
                     (e.code && rawEntity.startsWith(e.code)) || 
                     (e.name && (e.name === rawEntity || rawEntity.includes(e.name)))
@@ -1513,7 +2076,7 @@
             saveLogs();
             closeTxModal();
             renderApp();
-            showToast(`Operado por ${currentOperator} | Pedido N° ${docRef}`);
+            showToast(`Operado por ${currentOperator} | Comprobante N° ${docRef}`);
         }
 
         function openProductHistoryModal(medId) {
@@ -1570,9 +2133,9 @@
 
                             ${l.entity ? `
                                 <div class="bg-cyan-50 text-cyan-900 border border-cyan-200/80 rounded-md px-2 py-1.5 my-1 text-[11px] flex items-center justify-between">
-                                    <span class="font-semibold">🏥 ${l.clientCode && l.clientCode !== 'S/C' ? `[${l.clientCode}] ` : ''}${l.entity}</span>
+                                    <span class="font-semibold">${isIngreso ? '🏭' : '🏥'} ${l.clientCode && l.clientCode !== 'S/C' ? `[${l.clientCode}] ` : ''}${l.entity}</span>
                                     <span class="text-[10px] bg-cyan-700 text-white font-mono font-bold px-1.5 py-0.5 rounded shadow-xs">
-                                        Pedido: ${l.docRef}
+                                        ${isIngreso ? 'Remito' : 'Pedido'}: ${l.docRef}
                                     </span>
                                 </div>
                             ` : ''}
@@ -1900,7 +2463,7 @@
                 container.innerHTML = `
                     <div class="text-center py-8 text-slate-400 text-xs">
                         <p class="font-bold text-slate-600">No se encontraron movimientos</p>
-                        <p class="mt-1">Probá buscando con otro número de pedido o código de cliente.</p>
+                        <p class="mt-1">Probá buscando con otro número de pedido, remito o cliente.</p>
                     </div>
                 `;
                 return;
@@ -1925,10 +2488,10 @@
                                     ${l.clientCode && l.clientCode !== 'S/C' && l.clientCode !== 'PROV' && l.clientCode !== 'INT' ? `
                                         <span class="font-mono font-bold bg-cyan-100 text-cyan-800 px-1 py-0.2 rounded text-[10px]">${l.clientCode}</span>
                                     ` : ''}
-                                    <span class="font-bold">🏥 ${l.entity}</span>
+                                    <span class="font-bold">${isIn ? '🏭' : '🏥'} ${l.entity}</span>
                                 </div>
                                 <div class="text-right">
-                                    <span class="text-[9px] text-slate-400 uppercase block font-semibold">Pedido N°</span>
+                                    <span class="text-[9px] text-slate-400 uppercase block font-semibold">${isIn ? 'Remito N°' : 'Pedido N°'}</span>
                                     <span class="font-mono text-xs font-black text-slate-900 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">${l.docRef}</span>
                                 </div>
                             </div>
