@@ -570,7 +570,7 @@
         </div>
     </div>
 
-    <!-- Modal: Clientes RalPharma (Con Carga Masiva) -->
+    <!-- Modal: Clientes RalPharma (Con Carga Masiva y Sincronización Nube) -->
     <div id="clientsModal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-lg w-full p-5 shadow-2xl border border-slate-200 flex flex-col max-h-[90vh]">
             <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-3">
@@ -1266,13 +1266,7 @@
                 suppliers = storedSuppliers ? JSON.parse(storedSuppliers) : [...DEFAULT_SUPPLIERS];
 
                 const storedClients = localStorage.getItem(STORAGE_KEY_CLIENTS);
-                const parsedClients = storedClients ? JSON.parse(storedClients) : [];
-                if (parsedClients.some(c => c.code === "002002" || c.code === "002003")) {
-                    clients = [];
-                    localStorage.setItem(STORAGE_KEY_CLIENTS, JSON.stringify(clients));
-                } else {
-                    clients = parsedClients;
-                }
+                clients = storedClients ? JSON.parse(storedClients) : [];
 
                 const storedMeds = localStorage.getItem(STORAGE_KEY_MEDS);
                 medications = storedMeds ? JSON.parse(storedMeds) : [...DEFAULT_MEDS];
@@ -1324,6 +1318,11 @@
         function saveLabs() {
             localStorage.setItem(STORAGE_KEY_LABS, JSON.stringify(laboratories));
             if (db) db.collection('generia_stock').doc('laboratories').set({ items: laboratories });
+        }
+
+        function saveClients() {
+            localStorage.setItem(STORAGE_KEY_CLIENTS, JSON.stringify(clients));
+            if (db) db.collection('generia_stock').doc('clients').set({ items: clients });
         }
 
         function saveLogs() {
@@ -1381,6 +1380,18 @@
                         laboratories = doc.data().items;
                         localStorage.setItem(STORAGE_KEY_LABS, JSON.stringify(laboratories));
                         renderApp();
+                    }
+                });
+
+            db.collection('generia_stock').doc('clients')
+                .onSnapshot(doc => {
+                    if (doc.exists && Array.isArray(doc.data()?.items)) {
+                        clients = doc.data().items;
+                        localStorage.setItem(STORAGE_KEY_CLIENTS, JSON.stringify(clients));
+                        populateDatalists();
+                        renderClientsList();
+                    } else if (!doc.exists && clients.length > 0) {
+                        saveClients();
                     }
                 });
 
@@ -2256,7 +2267,7 @@
         }
 
         // ==========================================
-        // CLIENTES RALPHARMA (CON CARGA MASIVA)
+        // CLIENTES RALPHARMA (CON CARGA MASIVA Y SINCRONIZACIÓN NUBE)
         // ==========================================
         function openClientsModal() {
             const importBox = document.getElementById('clientImportBox');
@@ -2304,17 +2315,17 @@
                 return;
             }
             clients.sort((a, b) => a.name.localeCompare(b.name));
-            localStorage.setItem(STORAGE_KEY_CLIENTS, JSON.stringify(clients));
+            saveClients();
             populateDatalists();
             renderClientsList();
             document.getElementById('clientBulkTextarea').value = '';
             document.getElementById('clientImportBox').classList.add('hidden');
-            showToast(`✅ Padrón cargado (${clients.length} clientes oficiales)`);
+            showToast(`✅ Padrón sincronizado en la nube (${clients.length} clientes oficiales)`);
         }
 
         function clearAllClients() {
             clients = [];
-            localStorage.setItem(STORAGE_KEY_CLIENTS, JSON.stringify(clients));
+            saveClients();
             populateDatalists();
             renderClientsList();
             const box = document.getElementById('clientImportBox');
@@ -2328,6 +2339,7 @@
 
         function renderClientsList() {
             const list = document.getElementById('clientsModalList');
+            if (!list) return;
             const search = (document.getElementById('clientSearchInput')?.value || '').toLowerCase().trim();
             const sub = document.getElementById('clientsModalCountSubtitle');
             if (sub) sub.innerText = `${clients.length} clientes registrados`;
