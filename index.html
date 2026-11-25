@@ -78,9 +78,10 @@
                     <span class="text-slate-400 text-xs">👤</span>
                     <select id="activeOperatorSelect" onchange="changeOperator(this.value)" class="bg-transparent text-white text-xs font-semibold focus:outline-none cursor-pointer">
                         <option value="Jony" class="bg-slate-900 text-white">Jony</option>
-                        <option value="Depósito Mañana" class="bg-slate-900 text-white">Depósito Mañana</option>
-                        <option value="Depósito Tarde" class="bg-slate-900 text-white">Depósito Tarde</option>
-                        <option value="Farmacéutico DT" class="bg-slate-900 text-white">Farmacéutico DT</option>
+                        <option value="Nestor" class="bg-slate-900 text-white">Nestor</option>
+                        <option value="Cecilia" class="bg-slate-900 text-white">Cecilia</option>
+                        <option value="Anyerson" class="bg-slate-900 text-white">Anyerson</option>
+                        <option value="Javi" class="bg-slate-900 text-white">Javi</option>
                         <option value="__NEW__" class="bg-slate-900 text-emerald-400">+ Otro...</option>
                     </select>
                 </div>
@@ -1157,11 +1158,15 @@
             { id: "med-7", barcode: "7798088991122", name: "Pregabalina 75mg x 30", drug: "Pregabalina", lab: "Denver", presentation: "Cajas estuchadas", unit: "Cajas", location: "P5-B4-N3", batch: "PG-1090", expiry: "2027-01", stock: 60, minStock: 20, isControlled: true, batches: [{ batch: "PG-1090", expiry: "2027-01", qty: 60 }] }
         ];
 
+        const BASE_OPERATORS = ["Jony", "Nestor", "Cecilia", "Anyerson", "Javi"];
+        const STORAGE_KEY_OPERATORS = 'generia_stock_operators_v1';
+
         let medications = [];
         let laboratories = [];
         let suppliers = [];
         let clients = [];
         let logs = [];
+        let operators = [...BASE_OPERATORS];
         let selectedLabFilter = 'ALL';
         let currentOperator = localStorage.getItem('generia_operator') || 'Jony';
         let lastRalphSyncDate = localStorage.getItem(STORAGE_KEY_RALPH_SYNC) || '';
@@ -1227,21 +1232,53 @@
         function initOperator() {
             const select = document.getElementById('activeOperatorSelect');
             if (!select) return;
-            const exists = Array.from(select.options).some(o => o.value === currentOperator);
-            if (!exists && currentOperator) {
-                const opt = new Option(currentOperator, currentOperator);
-                select.add(opt, 0);
+            const cleanOps = [...BASE_OPERATORS];
+            operators.forEach(op => {
+                if (op && !cleanOps.includes(op) && op !== 'Depósito Mañana' && op !== 'Depósito Tarde' && op !== 'Farmacéutico DT') {
+                    cleanOps.push(op);
+                }
+            });
+            operators = cleanOps;
+
+            select.innerHTML = '';
+            operators.forEach(op => {
+                const opt = document.createElement('option');
+                opt.value = op;
+                opt.textContent = op;
+                opt.className = 'bg-slate-900 text-white';
+                select.appendChild(opt);
+            });
+
+            const addNewOpt = document.createElement('option');
+            addNewOpt.value = '__NEW__';
+            addNewOpt.textContent = '+ Otro...';
+            addNewOpt.className = 'bg-slate-900 text-emerald-400';
+            select.appendChild(addNewOpt);
+
+            if (!operators.includes(currentOperator)) {
+                currentOperator = 'Jony';
+                localStorage.setItem('generia_operator', currentOperator);
             }
             select.value = currentOperator;
             const bOp = document.getElementById('batchOperatorLabel');
             if (bOp) bOp.innerText = currentOperator;
         }
 
+        function saveOperators() {
+            localStorage.setItem(STORAGE_KEY_OPERATORS, JSON.stringify(operators));
+            if (db) db.collection('generia_stock').doc('operators').set({ items: operators });
+        }
+
         function changeOperator(val) {
             if (val === '__NEW__') {
                 const newName = prompt("Nombre del nuevo operador o preparador:");
                 if (newName && newName.trim()) {
-                    currentOperator = newName.trim();
+                    const clean = newName.trim();
+                    if (!operators.includes(clean)) {
+                        operators.push(clean);
+                        saveOperators();
+                    }
+                    currentOperator = clean;
                     localStorage.setItem('generia_operator', currentOperator);
                     initOperator();
                     showToast(`Operador activo: ${currentOperator}`);
@@ -1259,6 +1296,14 @@
 
         function loadInitialData() {
             try {
+                const storedOps = localStorage.getItem(STORAGE_KEY_OPERATORS);
+                if (storedOps) {
+                    const parsedOps = JSON.parse(storedOps);
+                    if (Array.isArray(parsedOps)) {
+                        operators = [...BASE_OPERATORS, ...parsedOps.filter(o => !BASE_OPERATORS.includes(o) && o !== 'Depósito Mañana' && o !== 'Depósito Tarde' && o !== 'Farmacéutico DT')];
+                    }
+                }
+
                 const storedLabs = localStorage.getItem(STORAGE_KEY_LABS);
                 laboratories = storedLabs ? JSON.parse(storedLabs) : [...DEFAULT_LABS];
                 
@@ -1392,6 +1437,16 @@
                         renderClientsList();
                     } else if (!doc.exists && clients.length > 0) {
                         saveClients();
+                    }
+                });
+
+            db.collection('generia_stock').doc('operators')
+                .onSnapshot(doc => {
+                    if (doc.exists && Array.isArray(doc.data()?.items)) {
+                        const cloudOps = doc.data().items.filter(o => o && o !== 'Depósito Mañana' && o !== 'Depósito Tarde' && o !== 'Farmacéutico DT');
+                        operators = [...BASE_OPERATORS, ...cloudOps.filter(o => !BASE_OPERATORS.includes(o))];
+                        localStorage.setItem(STORAGE_KEY_OPERATORS, JSON.stringify(operators));
+                        initOperator();
                     }
                 });
 
